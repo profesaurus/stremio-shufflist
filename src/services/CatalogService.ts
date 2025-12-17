@@ -88,7 +88,7 @@ export class CatalogService {
 
         // 1. Identify what is currently active in OTHER slots
         const otherActiveSelections = ConfigStore.getSlots()
-            .filter(s => s.id !== slotId && s.currentSelection?.sourceId)
+            .filter(s => s.id !== slotId && s.currentSelection?.sourceId && s.type == slotType)
             .map(s => {
                 const list = lists.find(l => l.id === s.currentSelection!.sourceId);
                 return {
