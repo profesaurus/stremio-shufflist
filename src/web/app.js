@@ -128,6 +128,34 @@ async function saveSettings() {
 // --- Rendering ---
 
 /**
+ * Generates consistent colors for a group name.
+ */
+function getGroupColors(groupName) {
+    if (!groupName) return { bg: 'bg-gray-700', text: 'text-gray-300', border: 'border-gray-600' };
+
+    const colors = [
+        { bg: 'bg-purple-500/20', text: 'text-purple-300', border: 'border-purple-500/30' },
+        { bg: 'bg-blue-500/20', text: 'text-blue-300', border: 'border-blue-500/30' },
+        { bg: 'bg-green-500/20', text: 'text-green-300', border: 'border-green-500/30' },
+        { bg: 'bg-yellow-500/20', text: 'text-yellow-300', border: 'border-yellow-500/30' },
+        { bg: 'bg-pink-500/20', text: 'text-pink-300', border: 'border-pink-500/30' },
+        { bg: 'bg-indigo-500/20', text: 'text-indigo-300', border: 'border-indigo-500/30' },
+        { bg: 'bg-teal-500/20', text: 'text-teal-300', border: 'border-teal-500/30' },
+        { bg: 'bg-orange-500/20', text: 'text-orange-300', border: 'border-orange-500/30' },
+        { bg: 'bg-red-500/20', text: 'text-red-300', border: 'border-red-500/30' },
+        { bg: 'bg-cyan-500/20', text: 'text-cyan-300', border: 'border-cyan-500/30' },
+    ];
+
+    let hash = 0;
+    for (let i = 0; i < groupName.length; i++) {
+        hash = groupName.charCodeAt(i) + ((hash << 5) - hash);
+    }
+
+    const index = Math.abs(hash) % colors.length;
+    return colors[index];
+}
+
+/**
  * Renders the entire UI (slots and lists).
  */
 function render() {
@@ -214,11 +242,15 @@ function renderLists() {
     seriesContainer.innerHTML = '';
 
     state.lists.forEach(list => {
+        const colors = getGroupColors(list.group);
         const html = `
         <div class="bg-gray-800 rounded-xl p-4 border border-gray-700 flex justify-between items-center group hover:border-blue-500/30 transition-all">
             <div class="min-w-0">
                 <div class="font-semibold text-gray-200 break-words">${list.alias}</div>
-                <div class="text-xs text-gray-500 mt-0.5">${formatSourceType(list.type)}</div>
+                <div class="flex items-center gap-2 mt-0.5">
+                    <div class="text-xs text-gray-500">${formatSourceType(list.type)}</div>
+                    ${list.group ? `<div class="text-[10px] font-bold px-1.5 py-0.5 rounded ${colors.bg} ${colors.text} border ${colors.border} tracking-tight" title="Group: ${list.group}">${list.group}</div>` : ''}
+                </div>
             </div>
             <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                 <button onclick="openEditListModal('${list.id}')" class="p-2 text-gray-500 hover:text-blue-400 transition-colors" title="Edit">
@@ -349,6 +381,7 @@ async function saveList() {
     const alias = document.getElementById('list-alias').value;
     const type = document.getElementById('source-type').value;
     const contentType = document.querySelector('input[name="list-content-type"]:checked').value;
+    const group = document.getElementById('list-group').value.trim();
     const shuffle = document.getElementById('list-shuffle').checked;
     const limitInput = document.getElementById('list-limit').value;
     const limit = limitInput ? parseInt(limitInput, 10) : (state.defaultItemLimit || DEFAULT_LIMIT);
@@ -393,7 +426,7 @@ async function saveList() {
         const res = await fetch(`${API_BASE}/lists/${currentEditingListId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ alias, type, contentType, config, shuffle, limit })
+            body: JSON.stringify({ alias, type, contentType, config, shuffle, limit, group })
         });
         if (!res.ok) {
             const data = await res.json();
@@ -405,7 +438,7 @@ async function saveList() {
         const res = await fetch(`${API_BASE}/lists`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ alias, type, contentType, config, shuffle, limit })
+            body: JSON.stringify({ alias, type, contentType, config, shuffle, limit, group })
         });
         if (!res.ok) {
             const data = await res.json();
@@ -648,17 +681,23 @@ function renderSlotConfigLists(selectedIds = [], slotType = 'movie') {
 
     checkboxContainer.innerHTML = validLists.map(list => {
         const checked = selectedIds.includes(list.id) ? 'checked' : '';
+        const colors = getGroupColors(list.group);
         return `
             <label class="flex items-center gap-3 p-2 hover:bg-gray-800 rounded cursor-pointer">
                 <input type="checkbox" name="slot_list_select" value="${list.id}" ${checked} class="accent-purple-500 w-4 h-4">
-                <span class="text-sm text-gray-300 font-medium">${list.alias}</span>
-                <span class="text-xs text-gray-500 ml-auto">${formatSourceType(list.type)}</span>
-            </label>
+                    <div class="flex flex-col min-w-0">
+                        <div class="flex items-center gap-2">
+                            <span class="text-sm text-gray-300 font-medium break-words">${list.alias}</span>
+                            ${list.group ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${colors.bg} ${colors.text} border ${colors.border} tracking-tight" title="Group: ${list.group}">${list.group}</span>` : ''}
+                        </div>
+                    </div>
+                    <span class="text-xs text-gray-500 ml-auto whitespace-nowrap">${formatSourceType(list.type)}</span>
+                </label>
         `;
     }).join('');
 
     if (validLists.length === 0) {
-        checkboxContainer.innerHTML = `<div class="text-sm text-red-400 p-2">No ${slotType} lists available.</div>`;
+        checkboxContainer.innerHTML = `< div class="text-sm text-red-400 p-2" > No ${slotType} lists available.</div > `;
     }
 }
 
@@ -738,8 +777,8 @@ async function saveSlotConfig() {
             lastRefreshResults[id] = { type: 'error', title: rr.error };
             showToast(rr.error || "Failed to auto-refresh catalog", 'error');
         } else if (rr.retried) {
-            lastRefreshResults[id] = { type: 'switched', title: `Switched from ${rr.failedListName}: ${rr.failReason}` };
-            showToast(`Current list '${rr.failedListName}' ${rr.failReason}. Fallback to: ${rr.listName}`, 'warning');
+            lastRefreshResults[id] = { type: 'switched', title: `Switched from ${rr.failedListName}: ${rr.failReason} ` };
+            showToast(`Current list '${rr.failedListName}' ${rr.failReason}. Fallback to: ${rr.listName} `, 'warning');
         } else if (rr.isEmpty) {
             lastRefreshResults[id] = { type: 'empty', title: `${rr.listName} is empty` };
             showToast(`Warning: Selected list '${rr.listName}' is empty.`, 'warning');
@@ -763,6 +802,7 @@ function openAddListModal(forcedType = 'movie') {
 
     // Clear fields
     document.getElementById('list-alias').value = '';
+    document.getElementById('list-group').value = '';
     document.getElementById('source-type').value = 'default_list';
     document.getElementById('default-type').value = '';
     document.getElementById('trakt-username').value = '';
@@ -797,6 +837,7 @@ function openEditListModal(id) {
     document.getElementById('list-modal-btn').innerText = 'Update List';
 
     document.getElementById('list-alias').value = list.alias;
+    document.getElementById('list-group').value = list.group || '';
     document.getElementById('source-type').value = list.type;
     document.getElementById('list-shuffle').checked = list.shuffle || false;
 
@@ -835,7 +876,7 @@ function openEditListModal(id) {
 function openAddSlotModal() {
     const nextNum = state.slots.length + 1;
     const input = document.getElementById('new-slot-alias');
-    input.value = `Shufflist ${nextNum}`;
+    input.value = `Shufflist ${nextNum} `;
     document.getElementById('add-slot-modal').classList.remove('hidden');
     setTimeout(() => input.select(), 100); // Select all text for easy overwrite
 }

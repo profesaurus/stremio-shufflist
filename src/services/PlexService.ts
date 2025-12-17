@@ -42,6 +42,7 @@ export class PlexService {
      * Make a connection to Plex
      */
     private async makeConnection() {
+        if (this.plex) return this.plex;
 
         if (process.env.PLEX_SERVER_NAME === undefined) {
             throw new Error("Plex server name not configured");
@@ -51,6 +52,7 @@ export class PlexService {
         const account = await client.connect();
         const resource = await account.resource(process.env.PLEX_SERVER_NAME);
         const plex = await resource.connect();
+        this.plex = plex;
         return plex;
     }
 

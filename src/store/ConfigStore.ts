@@ -45,6 +45,7 @@ export interface SourceList {
     config: Record<string, any>;
     shuffle?: boolean; // If true, items are randomized on fetch
     limit?: number; // Max items to fetch
+    group?: string; // Optional grouping for exclusivity logic
 }
 
 export interface CatalogSlot {

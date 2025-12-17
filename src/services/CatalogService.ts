@@ -84,17 +84,34 @@ export class CatalogService {
             return;
         }
 
-        // --- Unique List Logic ---
-        // Get IDs used by OTHER slots
-        const otherSlotsUserIds = ConfigStore.getSlots()
-            .filter(s => s.id !== slotId && s.currentSelection?.sourceId)
-            .map(s => s.currentSelection!.sourceId!);
+        // --- Unique List & Group Logic ---
 
-        // Filter candidates
-        const candidates = availableLists.filter(l => !otherSlotsUserIds.includes(l.id));
+        // 1. Identify what is currently active in OTHER slots
+        const otherActiveSelections = ConfigStore.getSlots()
+            .filter(s => s.id !== slotId && s.currentSelection?.sourceId)
+            .map(s => {
+                const list = lists.find(l => l.id === s.currentSelection!.sourceId);
+                return {
+                    id: s.currentSelection!.sourceId!,
+                    group: list?.group
+                };
+            });
+
+        const activeListIds = otherActiveSelections.map(x => x.id);
+        // Get set of active groups (filtering out undefined/empty groups)
+        const activeGroups = new Set(otherActiveSelections.map(x => x.group).filter(g => g));
+
+        // 2. Filter candidates
+        // Rule A: Don't pick the exact same list that is active elsewhere
+        // Rule B: Don't pick a list if its group is already active elsewhere
+        const candidates = availableLists.filter(l => {
+            if (activeListIds.includes(l.id)) return false; // Rule A
+            if (l.group && activeGroups.has(l.group)) return false; // Rule B
+            return true;
+        });
 
         if (candidates.length === 0) {
-            console.warn(`Slot ${slot.alias} has no unique lists available. defaulting to any available list.`);
+            console.warn(`Slot ${slot.alias} has no lists available after enforcing exclusivity rules. Defaulting to standard pool.`);
         }
 
         const selectionPool = candidates.length > 0 ? candidates : availableLists;
@@ -281,6 +298,10 @@ export class CatalogService {
 
         // Sort by least number of available lists first to prioritize restricted slots
         validSlots.sort((a, b) => a.listIds.length - b.listIds.length);
+
+        // Clear all current selections first so they don't influence the random selection of earlier slots
+        // This ensures the exclusivity logic works on a "blank slate" for the batch
+        validSlots.forEach(s => s.currentSelection = undefined);
 
         const results = [];
         for (const slot of validSlots) {
