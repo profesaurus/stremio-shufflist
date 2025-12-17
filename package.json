@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc && ncp src/web dist/web && .\\node_modules\\.bin\\tailwindcss -i src/web/input.css -o dist/web/output.css",
+    "build": "tsc && ncp src/web dist/web && tailwindcss -i src/web/input.css -o dist/web/output.css",
     "start": "node dist/addon.js",
     "dev": "nodemon"
   },
