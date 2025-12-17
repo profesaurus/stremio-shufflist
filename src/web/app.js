@@ -257,7 +257,7 @@ function renderLists() {
             </div>
             <div class="flex gap-2">
                 <button onclick="openEditListModal('${list.id}')" class="p-2 text-gray-500 hover:text-blue-400 transition-colors" title="Edit">
-                    ✏️
+                    ⚙️
                 </button>
                 <button onclick="deleteList('${list.id}')" class="p-2 text-gray-500 hover:text-red-400 transition-colors" title="Delete">
                     ✕
