@@ -307,35 +307,84 @@ function formatSourceType(type) {
 async function loadPlexCollections(selectedId = null) {
     const contentType = document.querySelector('input[name="list-content-type"]:checked').value;
     const select = document.getElementById('plexCollectionId');
+    const multiContainer = document.getElementById('plexCollectionMulti');
 
+    // Reset UI
     select.innerHTML = '<option value="">Loading...</option>';
     select.disabled = true;
+    multiContainer.innerHTML = '<div class="text-gray-400 text-sm italic">Loading collections...</div>';
 
     console.log(`Loading Plex Collections for type: ${contentType}`);
     try {
         const res = await fetch(`${API_BASE}/plex/collections?type=${contentType}`);
-        console.log("Fetch response status:", res.status);
+        if (!res.ok) throw new Error("Failed to fetch");
         const data = await res.json();
-        console.log("Fetch response data:", data);
 
         select.innerHTML = '<option value="">Select a collection...</option>';
-        if (Array.isArray(data)) {
-            data.forEach(col => {
-                const opt = document.createElement('option');
-                opt.value = col.key;
-                opt.textContent = `${col.title}`;
-                if (selectedId && col.key === selectedId) {
-                    opt.selected = true;
-                }
-                select.appendChild(opt);
-            });
+        multiContainer.innerHTML = '';
+
+        if (data.length === 0) {
+            multiContainer.innerHTML = '<div class="text-gray-500 text-sm italic">No collections found.</div>';
         }
+
+        data.forEach(col => {
+            // Populate Dropdown (Edit Mode)
+            const opt = document.createElement('option');
+            opt.value = col.key;
+            opt.textContent = `${col.title}`;
+            if (selectedId && col.key === selectedId) {
+                opt.selected = true;
+            }
+            select.appendChild(opt);
+
+            // Populate Multi-Select (Add Mode)
+            const label = document.createElement('label');
+            label.className = "flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer group transition-colors";
+            label.innerHTML = `
+                <div class="relative flex items-center">
+                    <input type="checkbox" name="plex_collection_select" value="${col.key}" data-label="${col.title}" 
+                        class="peer appearance-none w-5 h-5 border-2 border-gray-500 rounded bg-transparent checked:bg-purple-500 checked:border-purple-500 transition-all cursor-pointer">
+                    <svg class="absolute w-3.5 h-3.5 text-white pointer-events-none opacity-0 peer-checked:opacity-100 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-opacity" 
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <span class="text-gray-300 group-hover:text-white transition-colors">${col.title}</span>
+            `;
+            multiContainer.appendChild(label);
+        });
+
     } catch (e) {
         console.error("Failed to load Plex collections", e);
         select.innerHTML = '<option value="">Error loading collections</option>';
+        multiContainer.innerHTML = '<div class="text-red-400 text-sm">Error loading collections</div>';
     } finally {
         select.disabled = false;
     }
+}
+
+/**
+ * Populates the multi-select container for Default Lists from the dropdown options.
+ */
+function populateDefaultMulti() {
+    const select = document.getElementById('default-type');
+    const multiContainer = document.getElementById('default-type-multi');
+    multiContainer.innerHTML = '';
+
+    Array.from(select.options).forEach(opt => {
+        if (!opt.value) return; // Skip placeholder
+
+        const label = document.createElement('label');
+        label.className = "flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer group transition-colors";
+        label.innerHTML = `
+            <div class="relative flex items-center">
+                <input type="checkbox" name="default_list_select" value="${opt.value}" data-label="${opt.text}" 
+                    class="peer appearance-none w-5 h-5 border-2 border-gray-500 rounded bg-transparent checked:bg-purple-500 checked:border-purple-500 transition-all cursor-pointer">
+                <svg class="absolute w-3.5 h-3.5 text-white pointer-events-none opacity-0 peer-checked:opacity-100 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-opacity" 
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <span class="text-gray-300 group-hover:text-white transition-colors">${opt.text}</span>
+        `;
+        multiContainer.appendChild(label);
+    });
 }
 
 // Update loadPlexCollections when content type changes
@@ -389,8 +438,63 @@ async function saveList() {
     const limitInput = document.getElementById('list-limit').value;
     const limit = limitInput ? parseInt(limitInput, 10) : (state.defaultItemLimit || DEFAULT_LIMIT);
 
-    // Alias check moved to after config generation
+    // BATCH CREATION LOGIC (Add Mode Only)
+    if (!currentEditingListId && (type === 'default_list' || type === 'plex_collection')) {
+        let items = [];
 
+        if (type === 'default_list') {
+            const checked = document.querySelectorAll('input[name="default_list_select"]:checked');
+            checked.forEach(chk => {
+                items.push({
+                    config: { listType: chk.value, listTypeLabel: chk.dataset.label },
+                    alias: chk.dataset.label
+                });
+            });
+        } else if (type === 'plex_collection') {
+            const checked = document.querySelectorAll('input[name="plex_collection_select"]:checked');
+            checked.forEach(chk => {
+                items.push({
+                    config: { collectionId: chk.value, collectionName: chk.dataset.label },
+                    alias: chk.dataset.label
+                });
+            });
+        }
+
+        if (items.length === 0) {
+            showToast("Please select at least one list.", 'error');
+            return;
+        }
+
+        let successCount = 0;
+        for (const item of items) {
+            const res = await fetch(`${API_BASE}/lists`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    alias: alias || item.alias, // Use override alias if provided (unlikely for batch but possible)
+                    type,
+                    contentType,
+                    config: item.config,
+                    shuffle,
+                    limit,
+                    group
+                })
+            });
+            if (res.ok) successCount++;
+        }
+
+        if (successCount === items.length) {
+            showToast(`Created ${successCount} lists successfully.`);
+        } else {
+            showToast(`Created ${successCount}/${items.length} lists. Check logs for errors.`, 'warning');
+        }
+
+        closeModal('add-list-modal');
+        loadData();
+        return;
+    }
+
+    // ORIGINAL SINGLE ITEM LOGIC (Edit Mode or Single-Source Types)
     let config = {};
     if (type === 'trakt_user_list') {
         config = {
@@ -399,6 +503,7 @@ async function saveList() {
         };
         if (!alias) alias = `${config.username}'s ${config.listId} List`;
     } else if (type === 'default_list') {
+        // Edit Mode Fallback
         const select = document.getElementById('default-type');
         if (!select.value) {
             showToast("Please select a list type.", 'error');
@@ -416,6 +521,7 @@ async function saveList() {
         };
         if (!alias) alias = config.listName || "MDBList";
     } else if (type === 'plex_collection') {
+        // Edit Mode Fallback
         const colSelect = document.getElementById('plexCollectionId');
         if (!colSelect.value) {
             showToast("Please select a Plex collection.", 'error');
@@ -441,7 +547,7 @@ async function saveList() {
             return;
         }
     } else {
-        // Create
+        // Create (Single)
         const res = await fetch(`${API_BASE}/lists`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -937,16 +1043,50 @@ function closeModal(id) {
 /**
  * Toggles visibility of source-specific fields in the list modal.
  */
+/**
+ * Toggles visibility of source-specific fields in the list modal.
+ */
 function toggleSourceFields() {
     const type = document.getElementById('source-type').value;
+    const isAddMode = !currentEditingListId;
+
     document.querySelectorAll('.source-field').forEach(el => el.classList.add('hidden'));
 
-    if (type === 'trakt_user_list') document.getElementById('field-trakt-user').classList.remove('hidden');
-    if (type === 'default_list') document.getElementById('field-default').classList.remove('hidden');
-    if (type === 'mdblist_list') document.getElementById('field-mdblist').classList.remove('hidden');
+    if (type === 'trakt_user_list') {
+        document.getElementById('field-trakt-user').classList.remove('hidden');
+    }
+
+    if (type === 'default_list') {
+        const container = document.getElementById('field-default');
+        container.classList.remove('hidden');
+
+        // Toggle Multi/Single select based on mode
+        if (isAddMode) {
+            document.getElementById('default-type').classList.add('hidden');
+            document.getElementById('default-type-multi').classList.remove('hidden');
+            populateDefaultMulti(); // Ensure it's populated
+        } else {
+            document.getElementById('default-type').classList.remove('hidden');
+            document.getElementById('default-type-multi').classList.add('hidden');
+        }
+    }
+
+    if (type === 'mdblist_list') {
+        document.getElementById('field-mdblist').classList.remove('hidden');
+    }
+
     if (type === 'plex_collection') {
         console.log("Plex Collection selected in UI");
         document.getElementById('plexFields').classList.remove('hidden');
+
+        // Toggle Multi/Single select based on mode
+        if (isAddMode) {
+            document.getElementById('plexCollectionId').classList.add('hidden');
+            document.getElementById('plexCollectionMulti').classList.remove('hidden');
+        } else {
+            document.getElementById('plexCollectionId').classList.remove('hidden');
+            document.getElementById('plexCollectionMulti').classList.add('hidden');
+        }
     }
 }
 
