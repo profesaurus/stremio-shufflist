@@ -11,10 +11,10 @@
 
 import { ContentType, PlexContentType } from '../store/ConfigStore';
 import { MetaPreview } from 'stremio-addon-sdk';
-import { MyPlexAccount, PlexServer, MovieSection, ShowSection } from '@ctrl/plex';
+import type { MyPlexAccount, PlexServer, MovieSection, ShowSection } from '@ctrl/plex';
 
 export class PlexService {
-    private client: MyPlexAccount;
+    private client?: MyPlexAccount;
     private plex?: PlexServer;
 
     /**
@@ -24,8 +24,24 @@ export class PlexService {
         if (process.env.PLEX_URL === undefined || process.env.PLEX_USERNAME === undefined || process.env.PLEX_PASSWORD === undefined || process.env.PLEX_TOKEN === undefined) {
             throw new Error("Plex credentials not configured");
         }
+        // Client initialization moved to getClient() for dynamic import support
+    }
 
-        this.client = new MyPlexAccount(process.env.PLEX_URL, process.env.PLEX_USERNAME, process.env.PLEX_PASSWORD, process.env.PLEX_TOKEN);
+    /**
+     * Lazily initialize and return the MyPlexAccount client.
+     * Required because @ctrl/plex is an ESM module and we are in a CJS environment.
+     */
+    private async getClient(): Promise<MyPlexAccount> {
+        if (!this.client) {
+            const { MyPlexAccount } = await import('@ctrl/plex');
+            this.client = new MyPlexAccount(
+                process.env.PLEX_URL!,
+                process.env.PLEX_USERNAME!,
+                process.env.PLEX_PASSWORD!,
+                process.env.PLEX_TOKEN!
+            );
+        }
+        return this.client;
     }
 
     /**
@@ -37,7 +53,8 @@ export class PlexService {
             throw new Error("Plex server name not configured");
         }
 
-        const account = await this.client.connect();
+        const client = await this.getClient();
+        const account = await client.connect();
         const resource = await account.resource(process.env.PLEX_SERVER_NAME);
         const plex = await resource.connect();
         return plex;
