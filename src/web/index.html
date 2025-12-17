@@ -1,0 +1,410 @@
+<!--
+  index.html
+
+  Web Configuration Dashboard Structure.
+
+  Responsibilities:
+  1. Provides the HTML skeleton for the Config UI.
+  2. Loads Tailwind CSS for styling.
+  3. Defines the layout for "Source Lists" and "Catalog Slots" sections.
+  4. Contains the Modals for Adding/Editing lists and slots.
+  5. Loads `app.js` for logic.
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stremio Shufflist</title>
+    <link href="./output.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Custom scrollbar for dark theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #4b5563;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-gray-100 min-h-screen font-sans selection:bg-purple-500/30">
+
+    <!-- Toast Notification -->
+    <div id="toast"
+        class="fixed top-5 left-1/2 -translate-x-1/2 z-[100] transform transition-all duration-300 opacity-0 pointer-events-none">
+        <div
+            class="bg-red-500/90 text-white px-6 py-3 rounded-full shadow-2xl backdrop-blur-sm border border-red-400/50 flex items-center gap-3">
+            <span class="text-xl">⚠️</span>
+            <span id="toast-message" class="font-medium">Error message</span>
+        </div>
+    </div>
+    <div class="max-w-7xl mx-auto pb-24">
+        <header
+            class="mb-8 flex justify-between items-center bg-gray-800 p-6 rounded-2xl shadow-lg ring-1 ring-white/10">
+            <div>
+                <h1
+                    class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
+                    Stremio Shufflist</h1>
+                <p class="text-gray-400 mt-1">Design your perfect content rotation.</p>
+            </div>
+            <div class="flex gap-4 items-center">
+                <button onclick="openInstallModal()"
+                    class="bg-green-600 hover:bg-green-500 text-white px-6 py-2 rounded-full font-semibold transition-all shadow-lg hover:shadow-green-500/30">
+                    Install
+                </button>
+                <button onclick="openAddListModal()"
+                    class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-full font-semibold transition-all shadow-lg hover:shadow-blue-500/30">
+                    Add List
+                </button>
+                <button onclick="openSettingsModal()"
+                    class="text-gray-400 hover:text-white transition-colors p-2 rounded-full hover:bg-gray-700"
+                    title="Settings">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
+                        </path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- Left Column: Catalog Slots -->
+            <div class="lg:col-span-2 space-y-6">
+                <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+                    <div class="flex items-center gap-4">
+                        <h2 class="text-2xl font-bold">Active Catalogs</h2>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="refresh-all-btn" onclick="refreshAllCatalogs()"
+                            class="text-blue-400 hover:text-blue-300 font-semibold text-sm bg-blue-500/10 hover:bg-blue-500/20 px-4 py-1.5 rounded-full transition-colors">
+                            ↻ Refresh All
+                        </button>
+                        <button onclick="openAddSlotModal()"
+                            class="text-purple-400 hover:text-purple-300 font-semibold text-sm bg-purple-500/10 hover:bg-purple-500/20 px-4 py-1.5 rounded-full transition-colors">
+                            + New Catalog
+                        </button>
+                    </div>
+                </div>
+                <div id="slots-container" class="grid gap-6">
+                    <!-- Slots injected here -->
+                    <!-- Plex Collection Selection -->
+
+                </div>
+            </div>
+
+            <!-- Middle Column: Movie Lists -->
+            <div class="space-y-6">
+                <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+                    <h2 class="text-xl font-bold text-blue-400">Movie Lists</h2>
+                </div>
+                <div id="movie-lists-container" class="space-y-4">
+                    <!-- Lists injected here -->
+                </div>
+            </div>
+
+            <!-- Right Column: Series Lists -->
+            <div class="space-y-6">
+                <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+                    <h2 class="text-xl font-bold text-yellow-400">Series Lists</h2>
+                </div>
+                <div id="series-lists-container" class="space-y-4">
+                    <!-- Lists injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Install Modal -->
+    <div id="install-modal"
+        class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-gray-800 rounded-2xl p-8 max-w-sm w-full border border-gray-700 shadow-2xl relative">
+            <button onclick="closeModal('install-modal')"
+                class="absolute top-4 right-4 text-gray-400 hover:text-white">✕</button>
+            <h3 class="text-2xl font-bold mb-2">Install</h3>
+            <p class="text-gray-400 mb-6 text-sm">Install your addon</p>
+
+            <div class="space-y-3">
+                <button onclick="installStremio()"
+                    class="w-full bg-purple-600 hover:bg-purple-500 text-white py-3 rounded-xl font-semibold transition-colors">
+                    Stremio
+                </button>
+                <button onclick="installStremioWeb()"
+                    class="w-full bg-purple-600 hover:bg-purple-500 text-white py-3 rounded-xl font-semibold transition-colors">
+                    Stremio Web
+                </button>
+                <button onclick="copyManifestUrl()"
+                    class="w-full bg-purple-600 hover:bg-purple-500 text-white py-3 rounded-xl font-semibold transition-colors">
+                    Copy URL
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Slot Modal -->
+    <div id="add-slot-modal"
+        class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-gray-800 rounded-2xl p-8 max-w-md w-full border border-gray-700 shadow-2xl">
+            <h3 class="text-2xl font-bold mb-6">Create New Catalog</h3>
+            <form onsubmit="event.preventDefault(); createSlot()">
+                <input type="text" id="new-slot-alias" placeholder="Catalog Name (e.g. My Random Movie)"
+                    class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 mb-6 focus:ring-2 focus:ring-purple-500 outline-none">
+
+                <div class="mb-6 flex gap-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="new-slot-type" value="movie" checked class="accent-blue-500 w-4 h-4">
+                        <span class="text-gray-300">Movies</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="new-slot-type" value="series" class="accent-yellow-500 w-4 h-4">
+                        <span class="text-gray-300">Series</span>
+                    </label>
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="closeModal('add-slot-modal')"
+                        class="px-4 py-2 text-gray-400 hover:text-white">Cancel</button>
+                    <button type="submit"
+                        class="bg-purple-600 hover:bg-purple-500 text-white px-6 py-2 rounded-lg font-semibold">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Slot Config Modal -->
+    <div id="config-slot-modal"
+        class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div
+            class="bg-gray-800 rounded-2xl p-8 max-w-lg w-full border border-gray-700 shadow-2xl max-h-[90vh] flex flex-col">
+            <h3 class="text-2xl font-bold mb-4">Configure Catalog</h3>
+            <form onsubmit="event.preventDefault(); saveSlotConfig()" class="flex flex-col flex-1 min-h-0">
+                <input type="hidden" id="config-slot-id">
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Catalog Name</label>
+                    <input type="text" id="config-slot-alias" placeholder="Catalog Name"
+                        class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-purple-500 outline-none">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Content Type</label>
+                    <div class="flex gap-4">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="config-slot-type" value="movie"
+                                onchange="refreshConfigListFilter()" class="accent-blue-500 w-4 h-4">
+                            <span class="text-gray-300">Movies</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="config-slot-type" value="series"
+                                onchange="refreshConfigListFilter()" class="accent-yellow-500 w-4 h-4">
+                            <span class="text-gray-300">Series</span>
+                        </label>
+                    </div>
+                </div>
+
+                <hr class="border-gray-700 my-4">
+
+                <div class="flex gap-3 mb-4">
+                    <button type="button" onclick="selectAllLists()"
+                        class="text-xs bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded transition-colors">Select
+                        All</button>
+                    <button type="button" onclick="selectNoneLists()"
+                        class="text-xs bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded transition-colors">Select
+                        None</button>
+                </div>
+
+                <div id="slot-list-selector" class="mb-6 flex-1 min-h-0 flex flex-col">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="block text-sm font-medium text-gray-400">Included Lists</label>
+                        <input type="text" id="slot-list-filter" oninput="filterSlotLists()"
+                            placeholder="Filter lists..."
+                            class="text-xs bg-gray-700 border border-gray-600 rounded px-2 py-1 focus:ring-1 focus:ring-purple-500 outline-none w-1/2">
+                    </div>
+                    <div id="slot-list-checkboxes"
+                        class="space-y-2 bg-gray-900/50 p-4 rounded-lg border border-gray-700 overflow-y-auto max-h-120">
+                        <!-- Checkboxes injected here -->
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-auto pt-4 border-t border-gray-700">
+                    <button type="button" onclick="closeModal('config-slot-modal')"
+                        class="px-4 py-2 text-gray-400 hover:text-white">Cancel</button>
+                    <button type="submit"
+                        class="bg-purple-600 hover:bg-purple-500 text-white px-6 py-2 rounded-lg font-semibold">Save
+                        Configuration</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add List Modal -->
+    <div id="add-list-modal"
+        class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-gray-800 rounded-2xl p-8 max-w-md w-full border border-gray-700 shadow-2xl">
+            <h3 id="list-modal-title" class="text-2xl font-bold mb-6">Add New Source List</h3>
+            <form onsubmit="event.preventDefault(); saveList()">
+                <input type="text" id="list-alias" placeholder="Friendly Name (e.g. My Watchlist)"
+                    class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 mb-4 focus:ring-2 focus:ring-blue-500 outline-none">
+
+
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Content Type</label>
+                    <div class="flex gap-4">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="list-content-type" value="movie" checked
+                                class="accent-blue-500 w-4 h-4">
+                            <span class="text-gray-300">Movies</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" name="list-content-type" value="series"
+                                class="accent-yellow-500 w-4 h-4">
+                            <span class="text-gray-300">Series</span>
+                        </label>
+                    </div>
+                </div>
+
+                <hr class="border-gray-700 my-6">
+
+                <label class="block text-sm font-medium text-gray-400 mb-2">Source Type</label>
+                <select id="source-type"
+                    class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 mb-4 focus:ring-2 focus:ring-blue-500 outline-none"
+                    onchange="toggleSourceFields()">
+                    <option value="default_list">Default List</option>
+                    <option value="trakt_user_list">Trakt User List</option>
+                    <option value="mdblist_list">MdbList List</option>
+                    <option value="plex_collection">Plex Collection</option>
+                </select>
+
+                <div id="field-default" class="hidden source-field">
+                    <label class="block text-sm font-medium text-gray-400 mb-2">List Type</label>
+                    <select id="default-type"
+                        class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 mb-4 focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="">Select a list...</option>
+                        <option value="trending">Trending (Trakt)</option>
+                        <option value="popular">Popular (Trakt)</option>
+                        <option value="streaming">Streaming Now (Trakt)</option>
+                        <option value="watched">Watched (Trakt)</option>
+                        <option value="imdb_top">Official IMDB Top 250</option>
+                    </select>
+                </div>
+
+                <div id="field-trakt-user" class="hidden source-field">
+                    <input type="text" id="trakt-username" placeholder="Trakt Username"
+                        class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 mb-3 focus:ring-2 focus:ring-blue-500 outline-none">
+                    <input type="text" id="trakt-list-id" placeholder="List ID (e.g. top-100-movies)"
+                        class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 mb-3 focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div id="field-mdblist" class="hidden source-field">
+                    <input type="text" id="mdblist-username" placeholder="MdbList Username"
+                        class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 mb-3 focus:ring-2 focus:ring-blue-500 outline-none">
+                    <input type="text" id="mdblist-list-name" placeholder="MdbList Name (e.g. top-100-movies)"
+                        class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 mb-3 focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div id="plexFields" class="hidden source-field">
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Select Collection</label>
+                    <select id="plexCollectionId"
+                        class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 mb-4 focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="">Select a collection...</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mb-4">Collections from your Plex "Movies" or "TV Shows" libraries.
+                    </p>
+                </div>
+
+                <hr class="border-gray-700 my-6">
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Item Limit</label>
+                    <input type="number" id="list-limit" min="1" max="1000"
+                        class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none text-white">
+                </div>
+
+                <div class="mt-4 mb-6">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="list-shuffle" class="accent-blue-500 w-5 h-5">
+                        <span class="text-gray-300 font-medium select-none">Shuffle Items on Refresh</span>
+                    </label>
+                    <p class="text-xs text-gray-500 mt-1 ml-7">Randomize the order of items every time this list is
+                        selected.</p>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" onclick="closeModal('add-list-modal')"
+                        class="px-4 py-2 text-gray-400 hover:text-white">Cancel</button>
+                    <button type="submit" id="list-modal-btn"
+                        class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-semibold">Add
+                        List</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal"
+        class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-gray-800 rounded-2xl p-8 max-w-md w-full border border-gray-700 shadow-2xl relative">
+            <button onclick="closeModal('settings-modal')"
+                class="absolute top-4 right-4 text-gray-400 hover:text-white">✕</button>
+            <h3 class="text-2xl font-bold mb-6">Settings</h3>
+            <form onsubmit="event.preventDefault(); saveSettings()">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Auto-Refresh Schedule</label>
+                    <div class="flex items-center space-x-2">
+                        <input type="number" id="settings-interval" min="0"
+                            class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none text-white"
+                            placeholder="Hours">
+                        <span class="text-gray-400">Hours</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">Set to 0 to disable auto-refresh.</p>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-400 mb-2">Global Item Limit</label>
+                    <input type="number" id="settings-limit" min="1" max="1000"
+                        class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 outline-none text-white"
+                        placeholder="Default limit (e.g. 50)">
+                    <p class="text-xs text-gray-500 mt-2">Default item count for new lists.</p>
+                </div>
+                <div class="flex justify-end gap-3 mt-6">
+                    <button type="button" onclick="closeModal('settings-modal')"
+                        class="px-4 py-2 text-gray-400 hover:text-white">Cancel</button>
+                    <button type="submit"
+                        class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg font-semibold">Save
+                        Settings</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Floating Timer -->
+    <div id="refresh-timer-container"
+        class="hidden fixed bottom-6 right-6 z-40 bg-gray-800/90 backdrop-blur text-blue-400 border border-blue-500/30 px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-xs font-semibold hover:bg-gray-800 transition-colors cursor-default select-none">
+        <span>↻ Next Refresh:</span>
+        <span id="refresh-timer" class="font-mono text-blue-300">--:--:--</span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
