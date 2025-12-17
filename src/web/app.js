@@ -381,7 +381,7 @@ document.getElementById('plexCollectionId').addEventListener('change', function 
  * Saves a new or updated list configuration.
  */
 async function saveList() {
-    const alias = document.getElementById('list-alias').value;
+    let alias = document.getElementById('list-alias').value;
     const type = document.getElementById('source-type').value;
     const contentType = document.querySelector('input[name="list-content-type"]:checked').value;
     const group = document.getElementById('list-group').value.trim();
@@ -389,7 +389,7 @@ async function saveList() {
     const limitInput = document.getElementById('list-limit').value;
     const limit = limitInput ? parseInt(limitInput, 10) : (state.defaultItemLimit || DEFAULT_LIMIT);
 
-    if (!alias) return alert("Name required");
+    // Alias check moved to after config generation
 
     let config = {};
     if (type === 'trakt_user_list') {
@@ -397,6 +397,7 @@ async function saveList() {
             username: document.getElementById('trakt-username').value,
             listId: document.getElementById('trakt-list-id').value
         };
+        if (!alias) alias = `${config.username}'s ${config.listId} List`;
     } else if (type === 'default_list') {
         const select = document.getElementById('default-type');
         if (!select.value) {
@@ -407,11 +408,13 @@ async function saveList() {
             listType: select.value,
             listTypeLabel: select.options[select.selectedIndex].text
         };
+        if (!alias) alias = config.listTypeLabel;
     } else if (type === 'mdblist_list') {
         config = {
             username: document.getElementById('mdblist-username').value,
             listName: document.getElementById('mdblist-list-name').value
         };
+        if (!alias) alias = config.listName || "MDBList";
     } else if (type === 'plex_collection') {
         const colSelect = document.getElementById('plexCollectionId');
         if (!colSelect.value) {
@@ -422,6 +425,7 @@ async function saveList() {
             collectionId: colSelect.value,
             collectionName: colSelect.options[colSelect.selectedIndex].textContent
         };
+        if (!alias) alias = config.collectionName;
     }
 
     if (currentEditingListId) {
@@ -840,6 +844,7 @@ function openAddListModal(forcedType = 'movie') {
 
     // Clear fields
     document.getElementById('list-alias').value = '';
+    document.getElementById('list-alias').classList.add('hidden'); // Hide for new lists
     document.getElementById('list-group').value = '';
     document.getElementById('source-type').value = 'default_list';
     document.getElementById('default-type').value = '';
@@ -874,7 +879,9 @@ function openEditListModal(id) {
     document.getElementById('list-modal-title').innerText = 'Edit Source List';
     document.getElementById('list-modal-btn').innerText = 'Update List';
 
-    document.getElementById('list-alias').value = list.alias;
+    const aliasInput = document.getElementById('list-alias');
+    aliasInput.value = list.alias;
+    aliasInput.classList.remove('hidden'); // Show for edit
     document.getElementById('list-group').value = list.group || '';
     document.getElementById('source-type').value = list.type;
     document.getElementById('list-shuffle').checked = list.shuffle || false;
