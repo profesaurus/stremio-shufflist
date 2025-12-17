@@ -8,15 +8,54 @@
  * 2. Handles user interactions (forms, modals, buttons).
  * 3. Communicates with the Backend API to fetch and save configuration.
  */
+// --- Constants ---
+
 const API_BASE = '/api';
 const DEFAULT_LIMIT = 25;
 
 let state = {
     lists: [],
-    slots: []
+    slots: [],
+    settings: {}, // Added for robustness
+    defaultItemLimit: DEFAULT_LIMIT
 };
 
 let lastRefreshResults = {};
+let currentEditingListId = null;
+
+// --- Helper Functions for Batch UI ---
+
+function addTraktRow() {
+    const container = document.getElementById('trakt-entries-container');
+    const div = document.createElement('div');
+    div.className = "trakt-entry-row mb-3 bg-gray-900/30 p-2 rounded-lg border border-gray-700/30 relative group";
+    div.innerHTML = `
+        <input type="text" placeholder="Trakt Username"
+            class="trakt-user-input w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 mb-2 focus:ring-2 focus:ring-blue-500 outline-none">
+        <input type="text" placeholder="List ID (e.g. top-100-movies)"
+            class="trakt-list-input w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none">
+        <button type="button" onclick="this.parentElement.remove()" class="absolute top-2 right-2 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+    `;
+    container.appendChild(div);
+}
+
+function addMdbListRow() {
+    const container = document.getElementById('mdblist-entries-container');
+    const div = document.createElement('div');
+    div.className = "mdblist-entry-row mb-3 bg-gray-900/30 p-2 rounded-lg border border-gray-700/30 relative group";
+    div.innerHTML = `
+        <input type="text" placeholder="MdbList Username"
+            class="mdblist-user-input w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 mb-2 focus:ring-2 focus:ring-blue-500 outline-none">
+        <input type="text" placeholder="MdbList Name (e.g. top-100-movies)"
+            class="mdblist-list-input w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none">
+        <button type="button" onclick="this.parentElement.remove()" class="absolute top-2 right-2 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+    `;
+    container.appendChild(div);
+}
 
 // --- Fetching Data ---
 
@@ -165,7 +204,7 @@ function render() {
 
 
 
-let currentEditingListId = null;
+
 
 /**
  * Renders the catalog slots container.
@@ -439,7 +478,7 @@ async function saveList() {
     const limit = limitInput ? parseInt(limitInput, 10) : (state.defaultItemLimit || DEFAULT_LIMIT);
 
     // BATCH CREATION LOGIC (Add Mode Only)
-    if (!currentEditingListId && (type === 'default_list' || type === 'plex_collection')) {
+    if (!currentEditingListId && ['default_list', 'plex_collection', 'trakt_user_list', 'mdblist_list'].includes(type)) {
         let items = [];
 
         if (type === 'default_list') {
@@ -457,6 +496,30 @@ async function saveList() {
                     config: { collectionId: chk.value, collectionName: chk.dataset.label },
                     alias: chk.dataset.label
                 });
+            });
+        } else if (type === 'trakt_user_list') {
+            const rows = document.querySelectorAll('.trakt-entry-row');
+            rows.forEach(row => {
+                const username = row.querySelector('.trakt-user-input').value.trim();
+                const listId = row.querySelector('.trakt-list-input').value.trim();
+                if (username && listId) {
+                    items.push({
+                        config: { username, listId },
+                        alias: `${username}'s ${listId} List`
+                    });
+                }
+            });
+        } else if (type === 'mdblist_list') {
+            const rows = document.querySelectorAll('.mdblist-entry-row');
+            rows.forEach(row => {
+                const username = row.querySelector('.mdblist-user-input').value.trim();
+                const listName = row.querySelector('.mdblist-list-input').value.trim();
+                if (username && listName) {
+                    items.push({
+                        config: { username, listName },
+                        alias: listName
+                    });
+                }
             });
         }
 
@@ -1054,6 +1117,15 @@ function toggleSourceFields() {
 
     if (type === 'trakt_user_list') {
         document.getElementById('field-trakt-user').classList.remove('hidden');
+        if (isAddMode) {
+            document.getElementById('btn-add-trakt-row').classList.remove('hidden');
+            const container = document.getElementById('trakt-entries-container');
+            while (container.children.length > 1) {
+                container.removeChild(container.lastChild);
+            }
+        } else {
+            document.getElementById('btn-add-trakt-row').classList.add('hidden');
+        }
     }
 
     if (type === 'default_list') {
@@ -1073,6 +1145,15 @@ function toggleSourceFields() {
 
     if (type === 'mdblist_list') {
         document.getElementById('field-mdblist').classList.remove('hidden');
+        if (isAddMode) {
+            document.getElementById('btn-add-mdblist-row').classList.remove('hidden');
+            const container = document.getElementById('mdblist-entries-container');
+            while (container.children.length > 1) {
+                container.removeChild(container.lastChild);
+            }
+        } else {
+            document.getElementById('btn-add-mdblist-row').classList.add('hidden');
+        }
     }
 
     if (type === 'plex_collection') {
