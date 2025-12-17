@@ -201,7 +201,7 @@ export class CatalogService {
                 // Standard Trakt
                 const rawItems = await traktService.getDefaultList(listType, list.contentType || ContentType.MOVIE, limit);
                 const kindLabel = list.contentType === ContentType.SERIES ? 'Series' : 'Movies';
-                listName = `Trakt ${list.config.listTypeLabel || 'List'} ${kindLabel}`;
+                listName = `${list.config.listTypeLabel || 'List'}`;
 
                 items = rawItems.map((i: any) => {
                     const item = i.movie || i.show || i;
