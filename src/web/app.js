@@ -795,6 +795,41 @@ async function saveSlotConfig() {
 // --- UI Helpers ---
 
 /**
+ * Toggles the Add List dropdown menu.
+ */
+function toggleAddMenu() {
+    document.getElementById('add-list-menu').classList.toggle('hidden');
+}
+
+/**
+ * Initializes the Add List modal with a specific source type.
+ * @param {string} sourceType - The source type to pre-select.
+ */
+function initAddList(sourceType) {
+    document.getElementById('add-list-menu').classList.add('hidden'); // Close menu
+    openAddListModal(); // Open modal (resets fields)
+
+    const select = document.getElementById('source-type');
+    select.value = sourceType;
+
+    toggleSourceFields();
+    if (sourceType === 'plex_collection') {
+        loadPlexCollections();
+    }
+}
+
+// Close dropdown when clicking outside
+window.onclick = function (event) {
+    if (!event.target.matches('button[onclick="toggleAddMenu()"]') && !event.target.closest('button[onclick="toggleAddMenu()"]')) {
+        const dropdowns = document.getElementsByClassName("dropdown-content"); // NOTE: I am not using this class in HTML, I should target ID directly or use a better selector.
+        const menu = document.getElementById('add-list-menu');
+        if (menu && !menu.classList.contains('hidden')) {
+            menu.classList.add('hidden');
+        }
+    }
+}
+
+/**
  * Opens the modal to add a new list.
  * @param {string} forcedType - The default content type ('movie' or 'series').
  */
