@@ -78,7 +78,7 @@ The easiest way to run Shufflist is via Docker.
 
 ## ⚙️ Configuration
 
-1. **Add Sources**: Use the "Add List" button to import content from Trakt, IMDB, or Plex.
+1. **Add Lists**: Use the "Add List" button to import content from Trakt, IMDB, or Plex.
 2. **Create Catalogs**: Create a "Catalog" (e.g., "Daily Discovery").
 3. **Assign Lists**: Edit the catalog and check which lists should be available for that catalog to randomly select from.
 4. **Install**: Click "Install in Stremio" to add your new dynamic catalogs to your Stremio app.
