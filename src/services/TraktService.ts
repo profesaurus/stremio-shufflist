@@ -48,6 +48,7 @@ export class TraktService {
      * @returns An array of trending movies.
      */
     async getTrendingMovies() {
+        if (!this.clientId) throw new Error("Trakt Client ID not configured");
         const response = await this.client.get('/movies/trending');
         return response.data;
     }
@@ -60,6 +61,7 @@ export class TraktService {
      * @returns An array of list items.
      */
     async getListItems(username: string, listId: string, limit: number = DEFAULT_ITEM_LIMIT) {
+        if (!this.clientId) throw new Error("Trakt Client ID not configured");
         // e.g. /users/id/lists/id/items
         const response = await this.client.get(`/users/${username}/lists/${listId}/items`, {
             params: { limit }
@@ -75,6 +77,7 @@ export class TraktService {
      * @returns An array of default lists.
      */
     async getDefaultList(type: string, kind: string = 'movie', limit: number = DEFAULT_ITEM_LIMIT) {
+        if (!this.clientId) throw new Error("Trakt Client ID not configured");
         // Map user-friendly types to Trakt API endpoints
         // Types: trending, popular, streaming, favorited, watched
         const base = kind === 'series' ? 'shows' : 'movies';
@@ -111,6 +114,7 @@ export class TraktService {
      * @returns An array of search results.
      */
     async searchLists(query: string) {
+        if (!this.clientId) throw new Error("Trakt Client ID not configured");
         const response = await this.client.get(`/search/list`, {
             params: { query }
         });

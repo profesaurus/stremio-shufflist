@@ -18,22 +18,16 @@ export class PlexService {
     private plex?: PlexServer;
 
     /**
-     * Initializes the PlexService with Plex credentials.
-     */
-    constructor() {
-        if (process.env.PLEX_URL === undefined || process.env.PLEX_USERNAME === undefined || process.env.PLEX_PASSWORD === undefined || process.env.PLEX_TOKEN === undefined) {
-            throw new Error("Plex credentials not configured");
-        }
-        // Client initialization moved to getClient() for dynamic import support
-    }
-
-    /**
      * Lazily initialize and return the MyPlexAccount client.
      * Required because @ctrl/plex is an ESM module and we are in a CJS environment.
      */
     private async getClient(): Promise<MyPlexAccount> {
         if (!this.client) {
-            const { MyPlexAccount } = await import('@ctrl/plex');
+            // Bypass TSC conversion to require() by using new Function
+            // This forces Node.js to use its native ESM import() at runtime
+            const dynamicImport = new Function('specifier', 'return import(specifier)');
+            const { MyPlexAccount } = await dynamicImport('@ctrl/plex');
+
             this.client = new MyPlexAccount(
                 process.env.PLEX_URL!,
                 process.env.PLEX_USERNAME!,
@@ -41,7 +35,7 @@ export class PlexService {
                 process.env.PLEX_TOKEN!
             );
         }
-        return this.client;
+        return this.client!;
     }
 
     /**
@@ -66,6 +60,9 @@ export class PlexService {
      */
     public async getCollections(type: ContentType): Promise<{ key: string, title: string }[]> {
         console.log(`PlexService: getCollections called for ${type}`);
+        if (!process.env.PLEX_URL || !process.env.PLEX_TOKEN) {
+            throw new Error("Plex credentials (URL/Token) not configured");
+        }
         try {
             this.plex = await this.makeConnection();
             console.log("PlexService: Connection successful");
@@ -94,6 +91,9 @@ export class PlexService {
      * @param limit limit items
      */
     public async getListItems(collectionKey: string, limit: number = 50): Promise<MetaPreview[]> {
+        if (!process.env.PLEX_URL || !process.env.PLEX_TOKEN) {
+            throw new Error("Plex credentials (URL/Token) not configured");
+        }
         this.plex = await this.makeConnection();
         try {
             // We append ?includeGuids=1 to get external IDs (IMDB, TMDB, TVDB)
