@@ -222,7 +222,7 @@ function renderSlots() {
                 ${slot.currentSelection ? `
                     <div class="flex items-center gap-3">
                         <div class="w-2 h-2 rounded-full ${isMovie ? 'bg-blue-500' : 'bg-yellow-500'}"></div>
-                        <span class="font-medium ${isMovie ? 'text-blue-300' : 'text-yellow-300'} break-words">${slot.currentSelection.name}</span>
+                        <span class="font-medium ${isMovie ? 'text-blue-400' : 'text-yellow-400'} break-words">${slot.currentSelection.name}</span>
                         <span class="text-xs text-gray-500 ml-auto whitespace-nowrap">${slot.currentSelection.items.length - 1} items</span>
                     </div>
                 ` : '<div class="text-gray-500 italic text-sm">No list selected yet</div>'}
@@ -243,16 +243,19 @@ function renderLists() {
 
     state.lists.forEach(list => {
         const colors = getGroupColors(list.group);
+        const isMovie = (list.contentType || 'movie') === 'movie';
+        const titleColor = isMovie ? 'text-blue-400' : 'text-yellow-400';
+
         const html = `
         <div class="bg-gray-800 rounded-xl p-4 border border-gray-700 flex justify-between items-center group hover:border-blue-500/30 transition-all">
             <div class="min-w-0">
-                <div class="font-semibold text-gray-200 break-words">${list.alias}</div>
+                <div class="font-semibold ${titleColor} break-words">${list.alias}</div>
                 <div class="flex items-center gap-2 mt-0.5">
                     <div class="text-xs text-gray-500">${formatSourceType(list.type)}</div>
                     ${list.group ? `<div class="text-[10px] font-bold px-1.5 py-0.5 rounded ${colors.bg} ${colors.text} border ${colors.border} tracking-tight" title="Group: ${list.group}">${list.group}</div>` : ''}
                 </div>
             </div>
-            <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div class="flex gap-2">
                 <button onclick="openEditListModal('${list.id}')" class="p-2 text-gray-500 hover:text-blue-400 transition-colors" title="Edit">
                     ✏️
                 </button>
