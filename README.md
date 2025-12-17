@@ -1,4 +1,4 @@
-# Stremio Shufflist 🔀
+ # Stremio Shufflist 🔀
 
 **Design your perfect content rotation.**
 
@@ -85,4 +85,4 @@ The easiest way to run Shufflist is via Docker.
 
 ## 📝 License
 
-ISC
+MIT
