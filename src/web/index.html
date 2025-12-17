@@ -314,15 +314,8 @@
 
                 <hr class="border-gray-700 my-6">
 
-                <label class="block text-sm font-medium text-gray-400 mb-2">Source Type</label>
-                <select id="source-type"
-                    class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 mb-4 focus:ring-2 focus:ring-blue-500 outline-none"
-                    onchange="toggleSourceFields()">
-                    <option value="default_list">Default List</option>
-                    <option value="trakt_user_list">Trakt User List</option>
-                    <option value="mdblist_list">MdbList List</option>
-                    <option value="plex_collection">Plex Collection</option>
-                </select>
+                <input type="hidden" id="source-type" onchange="toggleSourceFields()">
+                <!-- Source Type (Hidden) -->
 
                 <div id="field-default" class="hidden source-field">
                     <label class="block text-sm font-medium text-gray-400 mb-2">List Type</label>
