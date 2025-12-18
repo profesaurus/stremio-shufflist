@@ -1357,3 +1357,23 @@ setInterval(() => {
         loadData();
     }
 }, 5000);
+
+/**
+ * Sets up smart scrollbar behavior (fade in on scroll).
+ */
+function setupSmartScrollbars() {
+    const containers = document.querySelectorAll('.custom-scrollbar');
+    containers.forEach(container => {
+        let timeout;
+        container.addEventListener('scroll', () => {
+            container.classList.add('scrolling');
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                container.classList.remove('scrolling');
+            }, 1000);
+        });
+    });
+}
+
+// Initialize scrollbars
+setupSmartScrollbars();

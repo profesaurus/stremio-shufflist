@@ -41,6 +41,24 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #9ca3af;
         }
+
+        /* Auto-hide scrollbars for main sections */
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: transparent;
+            transition: background-color 0.2s;
+        }
+
+        .custom-scrollbar.scrolling::-webkit-scrollbar-thumb {
+            background: #6b7280;
+        }
+
+        .custom-scrollbar.scrolling::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
     </style>
 </head>
 
