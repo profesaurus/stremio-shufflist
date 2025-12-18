@@ -30,16 +30,16 @@
         }
 
         ::-webkit-scrollbar-track {
-            background: #4b5563;
+            background: #1f2937;
         }
 
         ::-webkit-scrollbar-thumb {
-            background: #4b5563;
+            background: #6b7280;
             border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #6b7280;
+            background: #9ca3af;
         }
     </style>
 </head>
@@ -55,9 +55,9 @@
             <span id="toast-message" class="font-medium">Error message</span>
         </div>
     </div>
-    <div class="max-w-7xl mx-auto pb-24">
+    <div class="max-w-7xl mx-auto h-screen flex flex-col overflow-hidden pb-4">
         <header
-            class="mb-8 flex justify-between items-center bg-gray-800 p-6 rounded-2xl shadow-lg ring-1 ring-white/10">
+            class="flex-none mb-4 flex justify-between items-center bg-gray-800 p-6 rounded-b-2xl shadow-lg ring-1 ring-white/10 z-10">
             <div>
                 <h1
                     class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
@@ -113,10 +113,10 @@
             </div>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div class="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-4 gap-8 px-2">
             <!-- Left Column: Catalog Slots -->
-            <div class="lg:col-span-2 space-y-6">
-                <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+            <div class="lg:col-span-2 flex flex-col h-full min-h-0 bg-gray-900/50 rounded-xl p-2">
+                <div class="flex-none flex justify-between items-center border-b border-gray-700 pb-2 mb-4 px-2">
                     <div class="flex items-center gap-4">
                         <h2 class="text-2xl font-bold">Active Catalogs</h2>
                     </div>
@@ -131,7 +131,8 @@
                         </button>
                     </div>
                 </div>
-                <div id="slots-container" class="grid gap-6">
+                <div id="slots-container"
+                    class="flex-1 overflow-y-auto pr-2 custom-scrollbar grid gap-6 content-start pb-2">
                     <!-- Slots injected here -->
                     <!-- Plex Collection Selection -->
 
@@ -139,21 +140,21 @@
             </div>
 
             <!-- Middle Column: Movie Lists -->
-            <div class="space-y-6">
-                <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+            <div class="flex flex-col h-full min-h-0 bg-gray-900/50 rounded-xl p-2">
+                <div class="flex-none flex justify-between items-center border-b border-gray-700 pb-2 mb-4 px-2">
                     <h2 class="text-xl font-bold text-blue-400">Movie Lists</h2>
                 </div>
-                <div id="movie-lists-container" class="space-y-4">
+                <div id="movie-lists-container" class="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4 pb-2">
                     <!-- Lists injected here -->
                 </div>
             </div>
 
             <!-- Right Column: Series Lists -->
-            <div class="space-y-6">
-                <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+            <div class="flex flex-col h-full min-h-0 bg-gray-900/50 rounded-xl p-2">
+                <div class="flex-none flex justify-between items-center border-b border-gray-700 pb-2 mb-4 px-2">
                     <h2 class="text-xl font-bold text-yellow-400">Series Lists</h2>
                 </div>
-                <div id="series-lists-container" class="space-y-4">
+                <div id="series-lists-container" class="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4 pb-2">
                     <!-- Lists injected here -->
                 </div>
             </div>
