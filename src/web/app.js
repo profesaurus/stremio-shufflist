@@ -28,6 +28,7 @@ let currentEditingListId = null;
  */
 function updateAddButtonText() {
     const btn = document.getElementById('list-modal-btn');
+    if (btn.disabled) return;
     const type = document.getElementById('source-type').value;
     let count = 0;
 
@@ -510,162 +511,180 @@ document.getElementById('plexCollectionId').addEventListener('change', function 
  * Saves a new or updated list configuration.
  */
 async function saveList() {
-    let alias = document.getElementById('list-alias').value;
-    const type = document.getElementById('source-type').value;
-    const contentType = document.querySelector('input[name="list-content-type"]:checked').value;
-    const group = document.getElementById('list-group').value.trim();
-    const shuffle = document.getElementById('list-shuffle').checked;
-    const limitInput = document.getElementById('list-limit').value;
-    const limit = limitInput ? parseInt(limitInput, 10) : (state.defaultItemLimit || DEFAULT_LIMIT);
+    const btn = document.getElementById('list-modal-btn');
 
-    // BATCH CREATION LOGIC (Add Mode Only)
-    if (!currentEditingListId && ['default_list', 'plex_collection', 'trakt_user_list', 'mdblist_list'].includes(type)) {
-        let items = [];
+    // UI Loading State
+    btn.disabled = true;
+    btn.classList.add('animate-pulse');
+    const originalText = btn.innerText;
+    btn.innerText = currentEditingListId ? "Updating..." : "Adding...";
 
-        if (type === 'default_list') {
-            const checked = document.querySelectorAll('input[name="default_list_select"]:checked');
-            checked.forEach(chk => {
-                items.push({
-                    config: { listType: chk.value, listTypeLabel: chk.dataset.label },
-                    alias: chk.dataset.label
-                });
-            });
-        } else if (type === 'plex_collection') {
-            const checked = document.querySelectorAll('input[name="plex_collection_select"]:checked');
-            checked.forEach(chk => {
-                items.push({
-                    config: { collectionId: chk.value, collectionName: chk.dataset.label },
-                    alias: chk.dataset.label
-                });
-            });
-        } else if (type === 'trakt_user_list') {
-            const rows = document.querySelectorAll('.trakt-entry-row');
-            rows.forEach(row => {
-                const username = row.querySelector('.trakt-user-input').value.trim();
-                const listId = row.querySelector('.trakt-list-input').value.trim();
-                if (username && listId) {
+    try {
+        let alias = document.getElementById('list-alias').value;
+        const type = document.getElementById('source-type').value;
+        const contentType = document.querySelector('input[name="list-content-type"]:checked').value;
+        const group = document.getElementById('list-group').value.trim();
+        const shuffle = document.getElementById('list-shuffle').checked;
+        const limitInput = document.getElementById('list-limit').value;
+        const limit = limitInput ? parseInt(limitInput, 10) : (state.defaultItemLimit || DEFAULT_LIMIT);
+
+        // BATCH CREATION LOGIC (Add Mode Only)
+        if (!currentEditingListId && ['default_list', 'plex_collection', 'trakt_user_list', 'mdblist_list'].includes(type)) {
+            let items = [];
+
+            if (type === 'default_list') {
+                const checked = document.querySelectorAll('input[name="default_list_select"]:checked');
+                checked.forEach(chk => {
                     items.push({
-                        config: { username, listId },
-                        alias: `${username}'s ${listId} List`
+                        config: { listType: chk.value, listTypeLabel: chk.dataset.label },
+                        alias: chk.dataset.label
                     });
-                }
-            });
-        } else if (type === 'mdblist_list') {
-            const rows = document.querySelectorAll('.mdblist-entry-row');
-            rows.forEach(row => {
-                const username = row.querySelector('.mdblist-user-input').value.trim();
-                const listName = row.querySelector('.mdblist-list-input').value.trim();
-                if (username && listName) {
+                });
+            } else if (type === 'plex_collection') {
+                const checked = document.querySelectorAll('input[name="plex_collection_select"]:checked');
+                checked.forEach(chk => {
                     items.push({
-                        config: { username, listName },
-                        alias: listName
+                        config: { collectionId: chk.value, collectionName: chk.dataset.label },
+                        alias: chk.dataset.label
                     });
-                }
-            });
-        }
+                });
+            } else if (type === 'trakt_user_list') {
+                const rows = document.querySelectorAll('.trakt-entry-row');
+                rows.forEach(row => {
+                    const username = row.querySelector('.trakt-user-input').value.trim();
+                    const listId = row.querySelector('.trakt-list-input').value.trim();
+                    if (username && listId) {
+                        items.push({
+                            config: { username, listId },
+                            alias: `${username}'s ${listId} List`
+                        });
+                    }
+                });
+            } else if (type === 'mdblist_list') {
+                const rows = document.querySelectorAll('.mdblist-entry-row');
+                rows.forEach(row => {
+                    const username = row.querySelector('.mdblist-user-input').value.trim();
+                    const listName = row.querySelector('.mdblist-list-input').value.trim();
+                    if (username && listName) {
+                        items.push({
+                            config: { username, listName },
+                            alias: listName
+                        });
+                    }
+                });
+            }
 
-        if (items.length === 0) {
-            showToast("Please select at least one list.", 'error');
+            if (items.length === 0) {
+                showToast("Please select at least one list.", 'error');
+                return;
+            }
+
+            let successCount = 0;
+            for (const item of items) {
+                const res = await fetch(`${API_BASE}/lists`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        alias: alias || item.alias, // Use override alias if provided (unlikely for batch but possible)
+                        type,
+                        contentType,
+                        config: item.config,
+                        shuffle,
+                        limit,
+                        group
+                    })
+                });
+                if (res.ok) successCount++;
+            }
+
+            if (successCount === items.length) {
+                showToast(`Created ${successCount} lists successfully.`);
+            } else {
+                showToast(`Created ${successCount}/${items.length} lists. Check logs for errors.`, 'warning');
+            }
+
+            closeModal('add-list-modal');
+            loadData();
             return;
         }
 
-        let successCount = 0;
-        for (const item of items) {
+        // ORIGINAL SINGLE ITEM LOGIC (Edit Mode or Single-Source Types)
+        let config = {};
+        if (type === 'trakt_user_list') {
+            config = {
+                username: document.getElementById('trakt-username').value,
+                listId: document.getElementById('trakt-list-id').value
+            };
+            if (!alias) alias = `${config.username}'s ${config.listId} List`;
+        } else if (type === 'default_list') {
+            // Edit Mode Fallback
+            const select = document.getElementById('default-type');
+            if (!select.value) {
+                showToast("Please select a list type.", 'error');
+                return;
+            }
+            config = {
+                listType: select.value,
+                listTypeLabel: select.options[select.selectedIndex].text
+            };
+            if (!alias) alias = config.listTypeLabel;
+        } else if (type === 'mdblist_list') {
+            config = {
+                username: document.getElementById('mdblist-username').value,
+                listName: document.getElementById('mdblist-list-name').value
+            };
+            if (!alias) alias = config.listName || "MDBList";
+        } else if (type === 'plex_collection') {
+            // Edit Mode Fallback
+            const colSelect = document.getElementById('plexCollectionId');
+            if (!colSelect.value) {
+                showToast("Please select a Plex collection.", 'error');
+                return;
+            }
+            config = {
+                collectionId: colSelect.value,
+                collectionName: colSelect.options[colSelect.selectedIndex].textContent
+            };
+            if (!alias) alias = config.collectionName;
+        }
+
+        if (currentEditingListId) {
+            // Update
+            const res = await fetch(`${API_BASE}/lists/${currentEditingListId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ alias, type, contentType, config, shuffle, limit, group })
+            });
+            if (!res.ok) {
+                const data = await res.json();
+                showToast(data.error || "Failed to update list", 'error');
+                return;
+            }
+        } else {
+            // Create (Single)
             const res = await fetch(`${API_BASE}/lists`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    alias: alias || item.alias, // Use override alias if provided (unlikely for batch but possible)
-                    type,
-                    contentType,
-                    config: item.config,
-                    shuffle,
-                    limit,
-                    group
-                })
+                body: JSON.stringify({ alias, type, contentType, config, shuffle, limit, group })
             });
-            if (res.ok) successCount++;
-        }
-
-        if (successCount === items.length) {
-            showToast(`Created ${successCount} lists successfully.`);
-        } else {
-            showToast(`Created ${successCount}/${items.length} lists. Check logs for errors.`, 'warning');
+            if (!res.ok) {
+                const data = await res.json();
+                showToast(data.error || "Failed to create list. Is it valid?", 'error');
+                return;
+            }
         }
 
         closeModal('add-list-modal');
         loadData();
-        return;
+    } catch (e) {
+        console.error(e);
+        showToast("An unexpected error occurred while saving.", 'error');
+    } finally {
+        // Reset UI State
+        btn.disabled = false;
+        btn.classList.remove('animate-pulse');
+        updateAddButtonText(); // Restore appropriate text
     }
-
-    // ORIGINAL SINGLE ITEM LOGIC (Edit Mode or Single-Source Types)
-    let config = {};
-    if (type === 'trakt_user_list') {
-        config = {
-            username: document.getElementById('trakt-username').value,
-            listId: document.getElementById('trakt-list-id').value
-        };
-        if (!alias) alias = `${config.username}'s ${config.listId} List`;
-    } else if (type === 'default_list') {
-        // Edit Mode Fallback
-        const select = document.getElementById('default-type');
-        if (!select.value) {
-            showToast("Please select a list type.", 'error');
-            return;
-        }
-        config = {
-            listType: select.value,
-            listTypeLabel: select.options[select.selectedIndex].text
-        };
-        if (!alias) alias = config.listTypeLabel;
-    } else if (type === 'mdblist_list') {
-        config = {
-            username: document.getElementById('mdblist-username').value,
-            listName: document.getElementById('mdblist-list-name').value
-        };
-        if (!alias) alias = config.listName || "MDBList";
-    } else if (type === 'plex_collection') {
-        // Edit Mode Fallback
-        const colSelect = document.getElementById('plexCollectionId');
-        if (!colSelect.value) {
-            showToast("Please select a Plex collection.", 'error');
-            return;
-        }
-        config = {
-            collectionId: colSelect.value,
-            collectionName: colSelect.options[colSelect.selectedIndex].textContent
-        };
-        if (!alias) alias = config.collectionName;
-    }
-
-    if (currentEditingListId) {
-        // Update
-        const res = await fetch(`${API_BASE}/lists/${currentEditingListId}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ alias, type, contentType, config, shuffle, limit, group })
-        });
-        if (!res.ok) {
-            const data = await res.json();
-            showToast(data.error || "Failed to update list", 'error');
-            return;
-        }
-    } else {
-        // Create (Single)
-        const res = await fetch(`${API_BASE}/lists`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ alias, type, contentType, config, shuffle, limit, group })
-        });
-        if (!res.ok) {
-            const data = await res.json();
-            showToast(data.error || "Failed to create list. Is it valid?", 'error');
-            return;
-        }
-    }
-
-    closeModal('add-list-modal');
-    loadData();
 }
 
 /**
