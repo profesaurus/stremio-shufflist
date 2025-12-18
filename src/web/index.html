@@ -24,7 +24,13 @@
             font-family: 'Inter', sans-serif;
         }
 
-        /* Custom scrollbar for dark theme */
+        /* Firefox Scrollbar */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #6b7280 #1f2937;
+        }
+
+        /* Custom scrollbar for dark theme (Webkit) */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -113,9 +119,9 @@
             </div>
         </header>
 
-        <div class="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-4 gap-8 px-2">
+        <div class="flex-1 min-h-0 flex flex-col lg:flex-row gap-8 px-2">
             <!-- Left Column: Catalog Slots -->
-            <div class="lg:col-span-2 flex flex-col h-full min-h-0 bg-gray-900/50 rounded-xl p-2">
+            <div class="lg:w-1/2 flex flex-col h-full min-h-0 bg-gray-900/50 rounded-xl p-2 border border-gray-700/50">
                 <div class="flex-none flex justify-between items-center border-b border-gray-700 pb-2 mb-4 px-2">
                     <div class="flex items-center gap-4">
                         <h2 class="text-2xl font-bold">Active Catalogs</h2>
@@ -140,7 +146,7 @@
             </div>
 
             <!-- Middle Column: Movie Lists -->
-            <div class="flex flex-col h-full min-h-0 bg-gray-900/50 rounded-xl p-2">
+            <div class="lg:w-1/4 flex flex-col h-full min-h-0 bg-gray-900/50 rounded-xl p-2 border border-gray-700/50">
                 <div class="flex-none flex justify-between items-center border-b border-gray-700 pb-2 mb-4 px-2">
                     <h2 class="text-xl font-bold text-blue-400">Movie Lists</h2>
                 </div>
@@ -150,7 +156,7 @@
             </div>
 
             <!-- Right Column: Series Lists -->
-            <div class="flex flex-col h-full min-h-0 bg-gray-900/50 rounded-xl p-2">
+            <div class="lg:w-1/4 flex flex-col h-full min-h-0 bg-gray-900/50 rounded-xl p-2 border border-gray-700/50">
                 <div class="flex-none flex justify-between items-center border-b border-gray-700 pb-2 mb-4 px-2">
                     <h2 class="text-xl font-bold text-yellow-400">Series Lists</h2>
                 </div>
