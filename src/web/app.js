@@ -742,14 +742,29 @@ async function createSlot() {
     const alias = document.getElementById('new-slot-alias').value;
     const type = document.querySelector('input[name="new-slot-type"]:checked').value;
     if (!alias) return;
-    await fetch(`${API_BASE}/slots`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ alias, type })
-    });
-    closeModal('add-slot-modal');
-    loadData();
-    showToast("Catalog added. Please reinstall addon in Stremio to see changes.", 'warning');
+
+    const btn = document.getElementById('create-slot-btn');
+    const originalText = btn.innerText;
+    btn.disabled = true;
+    btn.innerText = "Creating...";
+    btn.classList.add('animate-pulse');
+
+    try {
+        await fetch(`${API_BASE}/slots`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ alias, type })
+        });
+        closeModal('add-slot-modal');
+        loadData();
+        showToast("Catalog added. Please reinstall addon in Stremio to see changes.", 'warning');
+    } catch (e) {
+        showToast("Failed to create catalog", 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerText = originalText;
+        btn.classList.remove('animate-pulse');
+    }
 }
 
 /**
