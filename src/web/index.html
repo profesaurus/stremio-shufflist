@@ -285,7 +285,8 @@
     <!-- Add List Modal -->
     <div id="add-list-modal"
         class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-gray-800 rounded-2xl p-8 max-w-md w-full border border-gray-700 shadow-2xl">
+        <div
+            class="bg-gray-800 rounded-2xl p-8 max-w-md w-full border border-gray-700 shadow-2xl max-h-[90vh] overflow-y-auto">
             <h3 id="list-modal-title" class="text-2xl font-bold mb-6">Add New Lists</h3>
             <form onsubmit="event.preventDefault(); saveList()">
                 <input type="hidden" id="source-type" onchange="toggleSourceFields()">
@@ -304,7 +305,7 @@
                     </select>
 
                     <div id="default-type-multi"
-                        class="hidden flex flex-col gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar bg-gray-900/50 p-2 rounded-lg border border-gray-700/50 mb-4">
+                        class="hidden flex flex-col gap-2 max-h-96 overflow-y-auto pr-2 custom-scrollbar bg-gray-900/50 p-2 rounded-lg border border-gray-700/50 mb-4">
                         <!-- Injected via JS -->
                     </div>
                 </div>
@@ -346,7 +347,7 @@
                         <option value="">Select a collection...</option>
                     </select>
                     <div id="plexCollectionMulti"
-                        class="hidden flex flex-col gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar bg-gray-900/50 p-2 rounded-lg border border-gray-700/50 mb-4">
+                        class="hidden flex flex-col gap-2 max-h-96 overflow-y-auto pr-2 custom-scrollbar bg-gray-900/50 p-2 rounded-lg border border-gray-700/50 mb-4">
                         <!-- Injected via JS -->
                     </div>
                     <p class="text-xs text-gray-500 mb-4">Collections from your Plex "Movies" or "TV Shows" libraries.
