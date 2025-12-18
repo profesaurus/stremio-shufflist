@@ -23,7 +23,44 @@ let state = {
 let lastRefreshResults = {};
 let currentEditingListId = null;
 
-// --- Helper Functions for Batch UI ---
+/**
+ * Updates the 'Add List' button text based on selection count.
+ */
+function updateAddButtonText() {
+    const btn = document.getElementById('list-modal-btn');
+    const type = document.getElementById('source-type').value;
+    let count = 0;
+
+    if (type === 'default_list') {
+        count = document.querySelectorAll('input[name="default_list_select"]:checked').length;
+    } else if (type === 'plex_collection') {
+        count = document.querySelectorAll('input[name="plex_collection_select"]:checked').length;
+    } else if (type === 'trakt_user_list') {
+        const rows = document.querySelectorAll('.trakt-entry-row');
+        count = Array.from(rows).filter(row => {
+            const u = row.querySelector('.trakt-user-input').value.trim();
+            const l = row.querySelector('.trakt-list-input').value.trim();
+            return u && l; // Only count if somewhat valid, or just count rows? User wants "If multiple lists are being added". 
+            // Counting rows is safer UI feedback even if empty.
+            return true;
+        }).length;
+    } else if (type === 'mdblist_list') {
+        count = document.querySelectorAll('.mdblist-entry-row').length;
+    }
+
+    // Default to 1 if count is 0 (e.g. initial state or nothing selected implies 1 potential action or just standard text)
+    // But if multiple are selected, show plural.
+    if (count > 1) {
+        btn.innerText = `Add ${count} Lists`;
+    } else {
+        btn.innerText = 'Add List';
+    }
+}
+
+function removeRow(btn) {
+    btn.parentElement.remove();
+    updateAddButtonText();
+}
 
 function addTraktRow() {
     const container = document.getElementById('trakt-entries-container');
@@ -31,14 +68,15 @@ function addTraktRow() {
     div.className = "trakt-entry-row mb-3 bg-gray-900/30 p-2 rounded-lg border border-gray-700/30 relative group";
     div.innerHTML = `
         <input type="text" placeholder="Trakt Username"
-            class="trakt-user-input w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 mb-2 focus:ring-2 focus:ring-blue-500 outline-none">
+            class="trakt-user-input w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 mb-2 focus:ring-2 focus:ring-blue-500 outline-none" oninput="updateAddButtonText()">
         <input type="text" placeholder="List ID (e.g. top-100-movies)"
-            class="trakt-list-input w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none">
-        <button type="button" onclick="this.parentElement.remove()" class="absolute top-2 right-2 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">
+            class="trakt-list-input w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none" oninput="updateAddButtonText()">
+        <button type="button" onclick="removeRow(this)" class="absolute top-2 right-2 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
     `;
     container.appendChild(div);
+    updateAddButtonText();
 }
 
 function addMdbListRow() {
@@ -47,14 +85,15 @@ function addMdbListRow() {
     div.className = "mdblist-entry-row mb-3 bg-gray-900/30 p-2 rounded-lg border border-gray-700/30 relative group";
     div.innerHTML = `
         <input type="text" placeholder="MdbList Username"
-            class="mdblist-user-input w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 mb-2 focus:ring-2 focus:ring-blue-500 outline-none">
+            class="mdblist-user-input w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 mb-2 focus:ring-2 focus:ring-blue-500 outline-none" oninput="updateAddButtonText()">
         <input type="text" placeholder="MdbList Name (e.g. top-100-movies)"
-            class="mdblist-list-input w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none">
-        <button type="button" onclick="this.parentElement.remove()" class="absolute top-2 right-2 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">
+            class="mdblist-list-input w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none" oninput="updateAddButtonText()">
+        <button type="button" onclick="removeRow(this)" class="absolute top-2 right-2 text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
     `;
     container.appendChild(div);
+    updateAddButtonText();
 }
 
 // --- Fetching Data ---
@@ -381,7 +420,7 @@ async function loadPlexCollections(selectedId = null) {
             label.className = "flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer group transition-colors";
             label.innerHTML = `
                 <div class="relative flex items-center">
-                    <input type="checkbox" name="plex_collection_select" value="${col.key}" data-label="${col.title}" 
+                    <input type="checkbox" name="plex_collection_select" value="${col.key}" data-label="${col.title}" onchange="updateAddButtonText()"
                         class="peer appearance-none w-5 h-5 border-2 border-gray-500 rounded bg-transparent checked:bg-purple-500 checked:border-purple-500 transition-all cursor-pointer">
                     <svg class="absolute w-3.5 h-3.5 text-white pointer-events-none opacity-0 peer-checked:opacity-100 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-opacity" 
                         fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
@@ -397,6 +436,7 @@ async function loadPlexCollections(selectedId = null) {
         multiContainer.innerHTML = '<div class="text-red-400 text-sm">Error loading collections</div>';
     } finally {
         select.disabled = false;
+        updateAddButtonText(); // Update after load
     }
 }
 
@@ -414,24 +454,25 @@ function populateDefaultMulti() {
         const label = document.createElement('label');
         label.className = "flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer group transition-colors";
         label.innerHTML = `
-            <div class="relative flex items-center">
-                <input type="checkbox" name="default_list_select" value="${opt.value}" data-label="${opt.text}" 
-                    class="peer appearance-none w-5 h-5 border-2 border-gray-500 rounded bg-transparent checked:bg-purple-500 checked:border-purple-500 transition-all cursor-pointer">
-                <svg class="absolute w-3.5 h-3.5 text-white pointer-events-none opacity-0 peer-checked:opacity-100 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-opacity" 
-                    fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-            </div>
-            <span class="text-gray-300 group-hover:text-white transition-colors">${opt.text}</span>
-        `;
+                <div class="relative flex items-center">
+                    <input type="checkbox" name="default_list_select" value="${opt.value}" data-label="${opt.text}" onchange="updateAddButtonText()"
+                        class="peer appearance-none w-5 h-5 border-2 border-gray-500 rounded bg-transparent checked:bg-purple-500 checked:border-purple-500 transition-all cursor-pointer">
+                    <svg class="absolute w-3.5 h-3.5 text-white pointer-events-none opacity-0 peer-checked:opacity-100 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-opacity" 
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <span class="text-gray-300 group-hover:text-white transition-colors">${opt.text}</span>
+            `;
         multiContainer.appendChild(label);
     });
 }
 
-// Update loadPlexCollections when content type changes
 document.querySelectorAll('input[name="list-content-type"]').forEach(radio => {
     radio.addEventListener('change', () => {
         if (document.getElementById('source-type').value === 'plex_collection') {
             loadPlexCollections();
         }
+        // Also update text if switching to default list and re-rendering checkboxes?
+        // Actually populateDefaultMulti is static from index.html options, but toggleSourceFields refreshes visibility.
     });
 });
 
@@ -1008,7 +1049,7 @@ window.onclick = function (event) {
  */
 function openAddListModal(forcedType = 'movie') {
     currentEditingListId = null;
-    document.getElementById('list-modal-title').innerText = 'Add New Source List';
+    document.getElementById('list-modal-title').innerText = 'Add New Lists';
     document.getElementById('list-modal-btn').innerText = 'Add List';
 
     // Clear fields
@@ -1169,6 +1210,8 @@ function toggleSourceFields() {
             document.getElementById('plexCollectionMulti').classList.add('hidden');
         }
     }
+
+    updateAddButtonText();
 }
 
 // --- Install Helpers ---
