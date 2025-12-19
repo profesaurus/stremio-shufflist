@@ -16,6 +16,7 @@ import { traktService } from './TraktService';
 import { mdbListService } from './MdbListService';
 import { plexService } from './PlexService';
 import { imdbService } from './ImdbService';
+import { RpdbService } from './RpdbService';
 import { ConfigStore, CatalogSlot, SourceType, ContentType, SourceList, DEFAULT_ITEM_LIMIT } from '../store/ConfigStore';
 
 export class CatalogService {
@@ -246,6 +247,9 @@ export class CatalogService {
             items = await plexService.getListItems(list.config.collectionId, limit);
             listName = list.alias; // Use user-defined alias
         }
+
+        // --- RPDB Integration ---
+        items = RpdbService.enrichItems(items);
 
         if (list.shuffle) {
             // Fisher-Yates Shuffle
