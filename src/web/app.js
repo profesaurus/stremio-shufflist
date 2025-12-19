@@ -1268,11 +1268,19 @@ function openInstallModal() {
 }
 
 /**
+ * Gets the base URL.
+ * @returns The base URL.
+ */
+function getBaseURL() {
+    return window.location.protocol + '//' + window.location.host;
+}
+
+/**
  * Gets the manifest URL.
  * @returns The manifest URL.
  */
 function getManifestUrl() {
-    return window.location.protocol + '//' + window.location.host + '/manifest.json';
+    return getBaseURL() + '/manifest.json';
 }
 
 /**
@@ -1298,7 +1306,7 @@ function installStremio() {
  */
 function installStremioWeb() {
     const manifestUrl = getManifestUrl();
-    const webUrl = `https://web.stremio.com/#/addon/${encodeURIComponent(manifestUrl)}`;
+    const webUrl = `https://web.stremio.com/#/addons?addon=${encodeURIComponent(manifestUrl)}`;
     window.open(webUrl, '_blank');
 }
 
