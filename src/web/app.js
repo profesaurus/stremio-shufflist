@@ -320,9 +320,19 @@ function renderLists() {
     movieContainer.innerHTML = '';
     seriesContainer.innerHTML = '';
 
+    const movieFilter = document.getElementById('movie-list-filter')?.value.toLowerCase() || '';
+    const seriesFilter = document.getElementById('series-list-filter')?.value.toLowerCase() || '';
+
     state.lists.forEach(list => {
-        const colors = getGroupColors(list.group);
         const isMovie = (list.contentType || 'movie') === 'movie';
+
+        // Filter Check
+        const filter = isMovie ? movieFilter : seriesFilter;
+        if (filter && !list.alias.toLowerCase().includes(filter) && !list.group?.toLowerCase().includes(filter)) {
+            return;
+        }
+
+        const colors = getGroupColors(list.group);
         const titleColor = isMovie ? 'text-blue-400' : 'text-yellow-400';
 
         const html = `
