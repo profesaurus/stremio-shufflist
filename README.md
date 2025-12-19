@@ -16,6 +16,7 @@ Design your perfect content rotation.
 -   **⚡ Seamless Updates**: Most content updates happen instantly. New lists appear in your existing catalogs without needing to reinstall the addon in Stremio.
     > Note: You will need to reinstall the addon if you add/remove a catalog or change a catalog's name or media type. This is a Stremio limitation.
 -   **📅 Automated Scheduling**: Content refreshes automatically in the background based on your preferred interval (in hours).
+-   **🚫 Group Exclusivity**: Assign lists to a 'Group' (e.g. 'Action', 'Comedy'). Shufflist ensures that only *one* list from a group is active at a time across all your catalogs, preventing duplicate genres or themes.
 
 ## 🌐 Supported Sources
 
