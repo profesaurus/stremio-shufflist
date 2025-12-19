@@ -4,18 +4,20 @@ Design your perfect content rotation.
 
 **Stremio Shufflist** is a powerful add-on that breathes life into your Stremio library. Instead of static lists, Shufflist lets you create Dynamic Catalogs that automatically rotate through your favorite content sources. Whether you want a "Movie of the Night" catalog that picks a random genre every day, or a "Sitcom Shuffle" that rotates through your Plex collections, Shufflist handles it all.
 
+<img width="1290" height="810" alt="image" src="https://github.com/user-attachments/assets/3defc959-5523-4724-a2ae-053933c68891" />
+
 ## ✨ Features
 
 -   **🧩 Dynamic Catalogs**: Define catalogs in Stremio that act as placeholders. These placeholder catalogs automatically update to display different content based on your configuration.
 -   **🔄 Smart Rotation**: Catalogs automatically rotate through a pool of lists you define (e.g., switch between "Trending Sci-Fi" and "80s Action" every 24 hours).
--   **yx List Shuffling**: Enable "Shuffle" on specific lists to randomize the item order every time they appear. Perfect for "Random Episode" style viewing.
+-   **📋 List Shuffling**: Enable "Shuffle" on specific lists to randomize the item order every time they appear. Perfect for "Random Episode" style viewing.
 -   **🖥️ Web Management UI**: Detailed, **mobile-responsive** web interface to add list sources, configure catalogs, **filter lists**, and manage your library.
 -   **⭐ RPDB Integration**: Automatically fetch premium posters with ratings from **Rating Poster Database** (RPDB) for all your items.
 -   **⚡ Seamless Updates**: Most content updates happen instantly. New lists appear in your existing catalogs without needing to reinstall the addon in Stremio.
     > Note: You will need to reinstall the addon if you add/remove a catalog or change a catalog's name or media type.
 -   **📅 Automated Scheduling**: Content refreshes automatically in the background based on your preferred interval (in hours).
 
-## 📋 Supported Sources
+## 🌐 Supported Sources
 
 Mix and match content from your favorite platforms:
 
