@@ -1279,9 +1279,18 @@ function getManifestUrl() {
  * Installs the addon in Stremio.
  */
 function installStremio() {
-    const scheme = window.location.protocol === 'https:' ? 'stremios' : 'stremio';
-    const url = `${scheme}://${window.location.host}/manifest.json`;
-    window.location.href = url;
+    // 1. Get the current absolute URL to the manifest
+    let manifestUrl = window.location.origin + '/manifest.json';
+
+    // 2. Convert to Stremio protocol
+    // http:// -> stremio://
+    // https:// -> stremios://
+    const installUrl = manifestUrl.replace(/^http/, 'stremio');
+
+    console.log('Attempting to open Stremio URL:', installUrl);
+
+    // 3. Navigate
+    window.location.href = installUrl;
 }
 
 /**
