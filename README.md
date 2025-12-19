@@ -115,7 +115,7 @@ docker-compose up -d
 To install on Unraid, use the "Add Container" feature in the Docker tab.
 
 1.  **Name**: Stremio Shufflist
-2.  **Repository**: `(Image URL if published, or build locally)`
+2.  **Repository**: `(profesaurus/stremio-shufflist, or build locally)`
 3.  **Network Type**: Bridge
 4.  **WebUI**: `http://[IP]:[PORT:7000]/web-config`
 5.  **Port Mapping**:
@@ -161,4 +161,4 @@ To install on Unraid, use the "Add Container" feature in the Docker tab.
 
 ## License
 
-ISC
+MIT
