@@ -76,7 +76,7 @@ docker run -d \
   -e PLEX_PASSWORD="MyPassword" \
   -v /path/to/config:/app/config \
   -p 7000:7000 \
-  stremio-shufflist:latest
+  profesaurus/stremio-shufflist:latest
 ```
 
 ### 2. Docker Compose
@@ -87,7 +87,7 @@ Create a `docker-compose.yml` file:
 version: '3.8'
 services:
   stremio-shufflist:
-    image: stremio-shufflist:latest
+    image: profesaurus/stremio-shufflist:latest
     container_name: stremio-shufflist
     restart: unless-stopped
     environment:
