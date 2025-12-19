@@ -4,7 +4,7 @@ export const manifest: Manifest = {
     id: 'org.stremio.shufflist',
     version: '1.0.0',
     name: 'Shufflist',
-    description: 'This project is an addon for Stremio that gives the appearance of catalogs shuffling their order in Stremio.',
+    description: 'Create dynamic catalogs that automatically rotate through your favorite lists from Trakt, MdbList, IMDB, and Plex. Features smart shuffling, auto-refresh scheduling, group exclusivity, and RPDB poster integration.',
     resources: ['catalog'],
     types: ['movie', 'series'],
     catalogs: [], // Start empty, populated dynamically
