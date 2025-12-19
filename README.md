@@ -1,21 +1,29 @@
-# Stremio Shufflist
+# Stremio Shufflist 🔀
 
-**Stremio Shufflist** is a powerful Stremio addon that allows you to create dynamic, shuffled catalogs from multiple sources. It merges lists from **Trakt**, **MDBList**, and **Plex** into custom catalogs that you can shuffle for a fresh viewing experience every time.
+Design your perfect content rotation.
 
-![Shufflist UI](https://github.com/user-attachments/assets/placeholder)
+**Stremio Shufflist** is a powerful add-on that breathes life into your Stremio library. Instead of static lists, Shufflist lets you create Dynamic Catalogs that automatically rotate through your favorite content sources. Whether you want a "Movie of the Night" catalog that picks a random genre every day, or a "Sitcom Shuffle" that rotates through your Plex collections, Shufflist handles it all.
 
-## Features
+## ✨ Features
 
--   **Multi-Source Integration**: Combine lists from:
-    -   **Trakt**: Trending, Popular, Streaming, or Custom User Lists.
-    -   **MDBList**: Any MDBList.com list.
-    -   **Plex**: Your own Plex Collections.
--   **RPDB Integration**: Automatically fetch premium posters with ratings from **Rating Poster Database** (RPDB) for all your items.
--   **Dynamic Shuffling**: Tired of seeing the same movies at the start of a list? Shufflist randomizes the order on every refresh.
--   **Combined Catalogs**: Create a "Mega-List" by merging multiple sources (e.g., "IMDB Top 250" + "My Watchlist" + "Trending Sci-Fi").
--   **Web Configuration UI**: A beautiful, dark-themed, and **mobile-responsive** web dashboard to manage your lists and catalogs easily.
--   **List Filtering**: Quickly find specific source lists with real-time text filtering.
--   **Auto-Refresh**: Set a schedule to automatically update your lists in the background.
+-   **🧩 Dynamic Catalogs**: Define catalogs in Stremio that act as placeholders. These placeholder catalogs automatically update to display different content based on your configuration.
+-   **🔄 Smart Rotation**: Catalogs automatically rotate through a pool of lists you define (e.g., switch between "Trending Sci-Fi" and "80s Action" every 24 hours).
+-   **yx List Shuffling**: Enable "Shuffle" on specific lists to randomize the item order every time they appear. Perfect for "Random Episode" style viewing.
+-   **🖥️ Web Management UI**: Detailed, **mobile-responsive** web interface to add list sources, configure catalogs, **filter lists**, and manage your library.
+-   **⭐ RPDB Integration**: Automatically fetch premium posters with ratings from **Rating Poster Database** (RPDB) for all your items.
+-   **⚡ Seamless Updates**: Most content updates happen instantly. New lists appear in your existing catalogs without needing to reinstall the addon in Stremio.
+    > Note: You will need to reinstall the addon if you add/remove a catalog or change a catalog's name or media type.
+-   **📅 Automated Scheduling**: Content refreshes automatically in the background based on your preferred interval (in hours).
+
+## 📋 Supported Sources
+
+Mix and match content from your favorite platforms:
+
+-   **Trakt**: Trending, Popular, Watched, Collected, Recommendations, and custom User Lists.
+-   **MdbList**: Import any list from MdbList.
+-   **IMDB**: Built-in support for Official Top 250 Movies & TV Shows.
+-   **Plex**: Connect your Plex server to use your Plex Collections as source lists.
+
 
 ## Prerequisites
 
