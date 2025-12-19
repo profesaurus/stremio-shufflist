@@ -4,10 +4,10 @@ Design your perfect content rotation.
 
 **Stremio Shufflist** is a powerful add-on that breathes life into your Stremio library. Instead of static lists, Shufflist lets you create Dynamic Catalogs that automatically rotate through your favorite content sources. Whether you want a "Movie of the Night" catalog that picks a random genre every day, or a "Sitcom Shuffle" that rotates through your Plex collections, Shufflist handles it all.
 
-Addon Configuration:
+### Addon Configuration:
 <img width="1287" height="805" alt="image" src="https://github.com/user-attachments/assets/646a6912-83e4-47c7-a510-76309386b8c3" />
 
-Stremio Catalogs:
+### Stremio Catalogs:
 <img width="1477" height="1104" alt="image" src="https://github.com/user-attachments/assets/a7eaaafd-5d9f-4f25-aed2-3ddef3414d30" />
 
 ## ✨ Features
