@@ -115,7 +115,7 @@ export class PlexService {
 
                 return {
                     id: id,
-                    type: item.type,
+                    type: item.type == 'show' ? 'series' : 'movie',
                     name: item.title,
                     description: item.summary
                 };
