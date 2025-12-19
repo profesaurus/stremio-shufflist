@@ -14,7 +14,7 @@ Design your perfect content rotation.
 -   **🖥️ Web Management UI**: Detailed, **mobile-responsive** web interface to add list sources, configure catalogs, **filter lists**, and manage your library.
 -   **⭐ RPDB Integration**: Automatically fetch premium posters with ratings from **Rating Poster Database** (RPDB) for all your items.
 -   **⚡ Seamless Updates**: Most content updates happen instantly. New lists appear in your existing catalogs without needing to reinstall the addon in Stremio.
-    > Note: You will need to reinstall the addon if you add/remove a catalog or change a catalog's name or media type.
+    > Note: You will need to reinstall the addon if you add/remove a catalog or change a catalog's name or media type. This is a Stremio limitation.
 -   **📅 Automated Scheduling**: Content refreshes automatically in the background based on your preferred interval (in hours).
 
 ## 🌐 Supported Sources
