@@ -1,10 +1,10 @@
 # Stremio Shufflist 🔀
 
-Design your perfect content rotation.
+### Design your perfect content rotation.
 
-**Stremio Shufflist** is a powerful add-on that breathes life into your Stremio library. Instead of static lists, Shufflist lets you create Dynamic Catalogs that automatically rotate through your favorite content sources. Whether you want a "Movie of the Night" catalog that picks a random genre every day, or a "Sitcom Shuffle" that rotates through your Plex collections, Shufflist handles it all.
+**Stremio Shufflist** is a powerful add-on that breathes life into your Stremio library. Instead of static lists, Shufflist lets you create Dynamic Catalogs that automatically rotate through your favorite content sources (lists). Whether you want a "Movie of the Night" catalog that picks a random genre every day, or a "Sitcom Shuffle" that rotates through your Plex TV sitcom collections, Shufflist handles it all.
 
-### Addon Configuration:
+### Addon Configuration WebUI:
 <img width="1287" height="805" alt="image" src="https://github.com/user-attachments/assets/646a6912-83e4-47c7-a510-76309386b8c3" />
 
 ### Stremio Catalogs:
@@ -27,7 +27,7 @@ Design your perfect content rotation.
 Mix and match content from your favorite platforms:
 
 -   **Trakt**: Trending, Popular, Watched, Collected, Recommendations, and custom User Lists.
--   **MdbList**: Import any list from MdbList.
+-   **MDBList**: Import any list from MDBList.
 -   **IMDB**: Built-in support for Official Top 250 Movies & TV Shows.
 -   **Plex**: Connect your Plex server to use your Plex Collections as source lists.
 
@@ -43,7 +43,7 @@ You need the following API keys depending on the services you wish to use:
 | Variable | Description | Required? |
 | :--- | :--- | :--- |
 | `TRAKT_CLIENT_ID` | Your Trakt API Client ID. Create an app at [trakt.tv/oauth/applications](https://trakt.tv/oauth/applications). | Yes (for Trakt) |
-| `MDBLIST_KEY` | Your MdbList API Key. Get it from [mdblist.com/preferences](https://mdblist.com/preferences). | Yes (for MDBList) |
+| `MDBLIST_KEY` | Your MDBList API Key. Get it from [MDBList.com/preferences](https://MDBList.com/preferences). | Yes (for MDBList) |
 | `RPDB_KEY` | Your RPDB API Key. Get it from [ratingposterdb.com](https://ratingposterdb.com). | Yes (for Posters) |
 | `PLEX_URL` | Your Plex Server URL (e.g., `http://192.168.1.10:32400`). | Yes (for Plex) |
 | `PLEX_TOKEN` | Your Plex Authentication Token. [Guide to find X-Plex-Token](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/). | Yes (for Plex) |
@@ -68,12 +68,13 @@ Run the container directly:
 docker run -d \
   --name=stremio-shufflist \
   -e TRAKT_CLIENT_ID=your_trakt_id \
-  -e MDBLIST_KEY=your_mdblist_key \
+  -e MDBLIST_KEY=your_MDBList_key \
+  -e RPDB_KEY=your_rpdb_key \
   -e PLEX_URL=http://your-plex-ip:32400 \
   -e PLEX_TOKEN=your_token \
-  -e PLEX_SERVER_NAME="MyServer" \
-  -e PLEX_USERNAME="MyUser" \
-  -e PLEX_PASSWORD="MyPassword" \
+  -e PLEX_SERVER_NAME="YourServerName" \
+  -e PLEX_USERNAME="YourUsername" \
+  -e PLEX_PASSWORD="YourPassword" \
   -v /path/to/config:/app/config \
   -p 7000:7000 \
   profesaurus/stremio-shufflist:latest
@@ -92,9 +93,9 @@ services:
     restart: unless-stopped
     environment:
       - TRAKT_CLIENT_ID=your_trakt_id_here
-      - MDBLIST_KEY=your_mdblist_key_here
-      # Plex Config (Optional)
-      - PLEX_URL=http://192.168.1.50:32400
+      - MDBLIST_KEY=your_MDBList_key_here
+      - RPDB_KEY=your_rpdb_key
+      - PLEX_URL=http://your-plex-ip:32400
       - PLEX_TOKEN=your_plex_token
       - PLEX_SERVER_NAME=Tower
       - PLEX_USERNAME=myplexuser
@@ -139,13 +140,13 @@ To install on Unraid, use the "Add Container" feature in the Docker tab.
     npm run build
     npm start
     ```
-5.  Access the Web UI at `http://localhost:7000/web-config`.
+5.  Access the Web UI at `http://localhost:7000/web-config` or `https://your-domain-name/web-config` if using a reverse proxy setup.
 
 ---
 
 ## Usage Guide
 
-1.  **Open the Web Dashboard**: Navigate to `http://localhost:7000/web-config`.
+1.  **Open the Web Dashboard**: Navigate to `http://localhost:7000/web-config` or `https://your-domain-name/web-config` if using a reverse proxy setup.
 2.  **Add Lists**:
     -   Click **"Add Lists"** in the top right.
     -   Select a source (e.g., Trakt User List, Default Trakt List, or Plex Collection).
@@ -157,7 +158,10 @@ To install on Unraid, use the "Add Container" feature in the Docker tab.
     -   Select which of your added lists should feed into this catalog.
 4.  **Install in Stremio**:
     -   Click the **"Install"** button in the header.
-    -   This will open Stremio and prompt you to install your custom addon.
+    -   Click **"Stremio"** to install directly to Stremio on your device.
+    -   Click **"Stremio Web"** to install to Stremio Web.
+    -   Click **"Copy URL**" to install in the addon section of Stremio using the url.
+      > Note: Your addon instance must be accessible to the internet if you want to use the addon in Stremio outside your local network.
 
 ## License
 
