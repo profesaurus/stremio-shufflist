@@ -51,7 +51,9 @@ function updateAddButtonText() {
 
     // Default to 1 if count is 0 (e.g. initial state or nothing selected implies 1 potential action or just standard text)
     // But if multiple are selected, show plural.
-    if (count > 1) {
+    if (currentEditingListId) {
+        btn.innerText = 'Save List';
+    } else if (count > 1) {
         btn.innerText = `Add ${count} Lists`;
     } else {
         btn.innerText = 'Add List';
@@ -1098,7 +1100,7 @@ function openAddListModal(forcedType = 'movie') {
 
     // Clear fields
     document.getElementById('list-alias').value = '';
-    document.getElementById('list-alias').classList.add('hidden'); // Hide for new lists
+    document.getElementById('list-alias-container').classList.add('hidden'); // Hide for new lists
     document.getElementById('list-group').value = '';
     document.getElementById('source-type').value = 'default_list';
     document.getElementById('default-type').value = '';
@@ -1135,7 +1137,7 @@ function openEditListModal(id) {
 
     const aliasInput = document.getElementById('list-alias');
     aliasInput.value = list.alias;
-    aliasInput.classList.remove('hidden'); // Show for edit
+    document.getElementById('list-alias-container').classList.remove('hidden'); // Show for edit
     document.getElementById('list-group').value = list.group || '';
     document.getElementById('source-type').value = list.type;
     document.getElementById('list-shuffle').checked = list.shuffle || false;
@@ -1202,12 +1204,15 @@ function toggleSourceFields() {
 
     if (type === 'trakt_user_list') {
         document.getElementById('field-trakt-user').classList.remove('hidden');
+
+        // Always reset to single row when switching context or mode
+        const container = document.getElementById('trakt-entries-container');
+        while (container.children.length > 1) {
+            container.removeChild(container.lastChild);
+        }
+
         if (isAddMode) {
             document.getElementById('btn-add-trakt-row').classList.remove('hidden');
-            const container = document.getElementById('trakt-entries-container');
-            while (container.children.length > 1) {
-                container.removeChild(container.lastChild);
-            }
         } else {
             document.getElementById('btn-add-trakt-row').classList.add('hidden');
         }
@@ -1230,12 +1235,15 @@ function toggleSourceFields() {
 
     if (type === 'mdblist_list') {
         document.getElementById('field-mdblist').classList.remove('hidden');
+
+        // Always reset to single row
+        const container = document.getElementById('mdblist-entries-container');
+        while (container.children.length > 1) {
+            container.removeChild(container.lastChild);
+        }
+
         if (isAddMode) {
             document.getElementById('btn-add-mdblist-row').classList.remove('hidden');
-            const container = document.getElementById('mdblist-entries-container');
-            while (container.children.length > 1) {
-                container.removeChild(container.lastChild);
-            }
         } else {
             document.getElementById('btn-add-mdblist-row').classList.add('hidden');
         }
